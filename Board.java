@@ -6,8 +6,8 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 public class Board extends JPanel {
-  private BufferedImage canvas;
-  
+  static private BufferedImage canvas;
+
   public Board(int X, int Y) {
     canvas = new BufferedImage(X, Y, BufferedImage.TYPE_INT_ARGB);
     fillCanvas(Color.black);
@@ -36,5 +36,11 @@ public class Board extends JPanel {
   public void updateCell(int x, int y, Color c) {
     int color = c.getRGB();
     canvas.setRGB(x, y, color);
+    repaint();
+  }
+
+  public int readCell(int x, int y) {
+    Color c = new Color(canvas.getRGB(x, y));
+    return c.getRGB();
   }
 }
