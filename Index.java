@@ -9,8 +9,8 @@ public class Index extends JFrame implements MouseListener {
 
   Container con = getContentPane();
 
-  final int DISPLAY_WIDTH = 1000;
-  final int DISPLAY_HEIGHT = 900;
+  final int DISPLAY_WIDTH = 1800;
+  final int DISPLAY_HEIGHT = 950;
 
   Color black = new Color(0,0,0);
 
@@ -38,11 +38,13 @@ public class Index extends JFrame implements MouseListener {
 
   */
 
-  int predStart = 50; // number of starting predators
-  int predStartHealth = 1;
+  int predStart = 2000; // number of starting predators
+  int predStartHealth = 50;
+  int predReproHealth = 5;
 
-  int preyStart = 50; // number of starting prey
+  int preyStart = 500; // number of starting prey
   int preyStartHealth = 1;
+  int cellsReproduceAt = 10;
 
   int gen = 0; // generation we are currently on
   int predCount = 0; // number of predators
@@ -94,6 +96,7 @@ public class Index extends JFrame implements MouseListener {
     ui.add(setupBtn);
 
     setSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    pack();
 
     stepBtn.addMouseListener(this);
     runBtn.addMouseListener(this);
@@ -108,8 +111,11 @@ public class Index extends JFrame implements MouseListener {
 
   // all the logic for a generation contained here (triggered by clicking the step button)
   public void step() {
+    // TODO: increase effeciency by: searching for predators, having them eat if they can, decrementing their health (your health isn't decremented this round if you reproduce), moving them if they can't do either.
+    // next, check which prey can reproduce. If you reprodcue, you can't move this round. increment prey's health if they subsequently move. Prey health only increases if they survive the suround (so predators don't get free health)
     // step called
     System.out.println("Step called");
+
     /*
       directions:
         0 - x+1 (right)
@@ -118,14 +124,12 @@ public class Index extends JFrame implements MouseListener {
         3 - y-1 (up)
       NOTE: PLUS Y (1+y) IS DOWN ON THE SCREEN
     */
-    // first, handle the logic for every prey on the board by searching the array for col1 values = 1
-    // lets just try to make them move in a random direction, and handle all of that logic
+
+    // ********************************* move first
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if(cells[x][y][0] == 1) {
           // prey found!
-          // can I reproduce?
-
           // am I surrounded?
           boolean rightFree = false;
           boolean downFree = false;
@@ -160,45 +164,48 @@ public class Index extends JFrame implements MouseListener {
           }
 
 
-          // what direction do I want to go?
+          // what direction do I prefer to move in?
           Random rand = new Random();
           int dir = rand.nextInt(4);
-          System.out.println("prey at x: " + x + " y: " + y + " wants to go in direction: " + dir);
+          // System.out.println("prey at x: " + x + " y: " + y + " prefers to move in direction: " + dir);
           if((dir == 0) && rightFree) {
             // going right x+1
             // copy cells values into new location
             cells[x+1][y][0] = 1; // place i'm moving is now prey
-            cells[x+1][y][1] = cells[x][y][1]; // and it has my health
+            cells[x+1][y][1] = ++cells[x][y][1]; // and it has my health +1 because I moved
             board.updateCell(x+1, y, Color.green);
 
             cells[x][y][0] = 0; // place I just left is now dead
             cells[x][y][1] = 0; // and is also dead
             board.updateCell(x, y, Color.black);
           } else if((dir == 1) && downFree) {
+            // I want to move!
             // going down y+1
             // copy cells values into new location
             cells[x][y+1][0] = 1; // place i'm moving is now prey
-            cells[x][y+1][1] = cells[x][y][1]; // and it has my health
+            cells[x][y+1][1] = ++cells[x][y][1]; // and it has my health +1 because I moved
             board.updateCell(x, y+1, Color.green);
 
             cells[x][y][0] = 0; // place I just left is now dead
             cells[x][y][1] = 0; // and is also dead
             board.updateCell(x, y, Color.black);
           } else if((dir == 2) && leftFree) {
+            // I want to move!
             // going left x-1
             // copy cells values into new location
             cells[x-1][y][0] = 1; // place i'm moving is now prey
-            cells[x-1][y][1] = cells[x][y][1]; // and it has my health
+            cells[x-1][y][1] = ++cells[x][y][1]; // and it has my health + 1 because I moved
             board.updateCell(x-1, y, Color.green);
 
             cells[x][y][0] = 0; // place I just left is now dead
             cells[x][y][1] = 0; // and is also dead
             board.updateCell(x, y, Color.black);
           } else if((dir == 3) && upFree) {
+            // I want to move!
             // going up y-1
             // copy cells values into new location
             cells[x][y-1][0] = 1; // place i'm moving is now prey
-            cells[x][y-1][1] = cells[x][y][1]; // and it has my health
+            cells[x][y-1][1] = ++cells[x][y][1]; // and it has my health +1 because I moved
             board.updateCell(x, y-1, Color.green);
 
             cells[x][y][0] = 0; // place I just left is now dead
@@ -241,17 +248,17 @@ public class Index extends JFrame implements MouseListener {
               upFree = true;
             }
           }
-          // can I eat?
 
           // what direction do I want to go?
+
           Random rand = new Random();
           int dir = rand.nextInt(4);
-          System.out.println("predator at x: " + x + " y: " + y + " wants to go in direction: " + dir);
+          // System.out.println("predator at x: " + x + " y: " + y + " wants to go in direction: " + dir);
           if((dir == 0) && rightFree) {
             // going right x+1
             // copy cells values into new location
             cells[x+1][y][0] = 2; // place i'm moving is now predator
-            cells[x+1][y][1] = cells[x][y][1]; // and it has my health
+            cells[x+1][y][1] = cells[x][y][1] - 1; // and it has my health - 1 because I moved
             board.updateCell(x+1, y, Color.red);
 
             cells[x][y][0] = 0; // place I just left is now dead
@@ -261,7 +268,7 @@ public class Index extends JFrame implements MouseListener {
             // going down y+1
             // copy cells values into new location
             cells[x][y+1][0] = 2; // place i'm moving is now predator
-            cells[x][y+1][1] = cells[x][y][1]; // and it has my health
+            cells[x][y+1][1] = cells[x][y][1] - 1; // and it has my health - 1 because I moved
             board.updateCell(x, y+1, Color.red);
 
             cells[x][y][0] = 0; // place I just left is now dead
@@ -271,7 +278,7 @@ public class Index extends JFrame implements MouseListener {
             // going left x-1
             // copy cells values into new location
             cells[x-1][y][0] = 2; // place i'm moving is now predator
-            cells[x-1][y][1] = cells[x][y][1]; // and it has my health
+            cells[x-1][y][1] = cells[x][y][1] - 1; // and it has my health - 1 because I moved
             board.updateCell(x-1, y, Color.red);
 
             cells[x][y][0] = 0; // place I just left is now dead
@@ -281,7 +288,7 @@ public class Index extends JFrame implements MouseListener {
             // going up y-1
             // copy cells values into new location
             cells[x][y-1][0] = 2; // place i'm moving is now predator
-            cells[x][y-1][1] = cells[x][y][1]; // and it has my health
+            cells[x][y-1][1] = cells[x][y][1] - 1; // and it has my health - 1 because I moved
             board.updateCell(x, y-1, Color.red);
 
             cells[x][y][0] = 0; // place I just left is now dead
@@ -291,11 +298,185 @@ public class Index extends JFrame implements MouseListener {
         }
       }
     }
+
+    // now that the predators are done moving for the step, we decide which to kill
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if((cells[x][y][0] == 2) && (cells[x][y][1] <= 1)) {
+          // this predator is dead
+          cells[x][y][0] = 0;
+          cells[x][y][1] = 0;
+          board.updateCell(x, y, Color.black);
+        }
+      }
+    }
+
+    // this loop handles reproduction logic
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 1) {
+          // prey found!
+          // am I surrounded?
+          boolean rightFree = false;
+          boolean downFree = false;
+          boolean leftFree = false;
+          boolean upFree = false;
+          if(x+1 < X) {
+            if(cells[x+1][y][0] == 0) { // TODO: OPTIMIZE
+              // right is occupied or a wall TODO: abstract "wall" part out to all iterations in the loop (move the boolean eval up a layer so it isn't executed every time)
+              rightFree = true;
+            }
+          }
+
+          if(y+1 < Y) {
+            if(cells[x][y+1][0] == 0) {
+              // below is occupied or a wall
+              downFree = true;
+            }
+          }
+
+          if(x-1 >= 0) {
+            if(cells[x-1][y][0] == 0) {
+              // left is occupied or a wall
+              leftFree = true;
+            }
+          }
+
+          if(y-1 >= 0) {
+            if(cells[x][y-1][0] == 0) {
+              // above is occupied or a wall
+              upFree = true;
+            }
+          }
+
+
+          // what direction do I prefer to act in?
+          Random rand = new Random();
+          int dir = rand.nextInt(4);
+          // System.out.println("prey at x: " + x + " y: " + y + " prefers to act in direction: " + dir);
+          if((dir == 0) && rightFree) {
+            // can I reproduce?
+            if(cells[x][y][1] >= cellsReproduceAt) {
+              // YES!
+              // copy cells values into new location
+              cells[x+1][y][0] = 1; // place i'm birthing is now prey
+              cells[x+1][y][1] = 1; // and it has 1 health
+              board.updateCell(x+1, y, Color.green);
+
+              cells[x][y][1] = 1; // my health resets to one
+            }
+          } else if((dir == 1) && downFree) {
+            // can I reproduce?
+            if(cells[x][y][1] >= cellsReproduceAt) {
+              // YES!
+              // copy cells values into new location
+              cells[x][y+1][0] = 1; // place i'm birthing is now prey
+              cells[x][y+1][1] = 1; // and it has 1 health
+              board.updateCell(x, y+1, Color.green);
+
+              cells[x][y][1] = 1; // my health resets to one
+            }
+          } else if((dir == 2) && leftFree) {
+            // can I reproduce?
+            if(cells[x][y][1] >= cellsReproduceAt) {
+              // YES!
+              // copy cells values into new location
+              cells[x-1][y][0] = 1; // place i'm birthing is now prey
+              cells[x-1][y][1] = 1; // and it has 1 health
+              board.updateCell(x-1, y, Color.green);
+
+              cells[x][y][1] = 1; // my health resets to one
+            }
+          } else if((dir == 3) && upFree) {
+            // can I reproduce?
+            if(cells[x][y][1] >= cellsReproduceAt) {
+              // YES!
+              // copy cells values into new location
+              cells[x][y-1][0] = 1; // place i'm birthing is now prey
+              cells[x][y-1][1] = 1; // and it has 1 health
+              board.updateCell(x, y-1, Color.green);
+
+              cells[x][y][1] = 1; // my health resets to one
+            }
+          }
+        }
+      }
+    }
+
+    // predator eating logic
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 2) {
+          // predator found!
+          // can I eat?
+          boolean ate = false;
+          Random rand = new Random();
+          int dir = rand.nextInt(4);
+          // System.out.println("predator at x: " + x + " y: " + y + " wants to go in direction: " + dir);
+          if(dir == 0) {
+            if(x+1 < X) {
+              if((cells[x+1][y][0] == 1) && (!ate)) {
+                // time to eat
+                cells[x][y][1] += cells[x+1][y][1];
+                cells[x+1][y][0] = 2;
+                cells[x+1][y][1] = predReproHealth;
+                board.updateCell(x+1, y, Color.red);
+                ate = true;
+              }
+            }
+          } else if(dir == 1) {
+            if(y+1 < Y) {
+              if((cells[x][y+1][0] == 1) && (!ate)) {
+                // time to eat
+                cells[x][y][1] += cells[x][y+1][1];
+                cells[x][y+1][0] = 2;
+                cells[x][y+1][1] = predReproHealth;
+                board.updateCell(x, y+1, Color.red);
+                ate = true;
+              }
+            }
+          } else if(dir == 2) {
+            if(x-1 >= 0) {
+              if((cells[x-1][y][0] == 1) && (!ate)) {
+                // time to eat
+                cells[x][y][1] += cells[x-1][y][1];
+                cells[x-1][y][0] = 2;
+                cells[x-1][y][1] = predReproHealth;
+                board.updateCell(x-1, y, Color.red);
+                ate = true;
+              }
+            }
+          } else if(dir == 3) {
+            if(y-1 >= 0) {
+              if((cells[x][y-1][0] == 1) && (!ate)) {
+                // time to eat
+                cells[x][y][1] += cells[x][y-1][1];
+                cells[x][y-1][0] = 2;
+                cells[x][y-1][1] = predReproHealth;
+                board.updateCell(x, y-1, Color.red);
+                ate = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    isBoardSetup = false;
   }
 
   public void run() {
     // run called
     System.out.println("Run called");
+    for(int x = 0; x < 10; ++x) {
+      step();
+      try {
+        Thread.sleep(2000);             // Sleep for 2 seconds
+      }catch(InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+      repaint();
+    }
   }
 
   public void stop() {
@@ -340,7 +521,7 @@ public class Index extends JFrame implements MouseListener {
           System.out.println(board.readCell(xPos, yPos));
           if(board.readCell(xPos, yPos) == black.getRGB()) { // check if position is already occupied or not
             cells[xPos][yPos][0] = 1;
-            cells[xPos][yPos][1] = 1;
+            cells[xPos][yPos][1] = preyStartHealth;
             board.updateCell(xPos, yPos, Color.green);
             placed = true;
             System.out.println("Prey placed at x: " + xPos + " y: " + yPos);
@@ -359,7 +540,7 @@ public class Index extends JFrame implements MouseListener {
           System.out.println(board.readCell(xPos, yPos));
           if(board.readCell(xPos, yPos) == black.getRGB()) { // check if position is already occupied or not
             cells[xPos][yPos][0] = 2;
-            cells[xPos][yPos][1] = 1;
+            cells[xPos][yPos][1] = predStartHealth;
             board.updateCell(xPos, yPos, Color.red);
             placed = true;
             System.out.println("Predator placed at x: " + xPos + " y: " + yPos);
