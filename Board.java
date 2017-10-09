@@ -21,10 +21,10 @@ public class Board extends JPanel {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g;
     g2.drawImage(canvas, null, null);
-    System.out.println(g2);
+    //System.out.println(g2);
     g3 = g2;
-    System.out.println(g3);
-    System.out.println("stored");
+    //System.out.println(g3);
+    //System.out.println("stored");
   }
 
   public void fillCanvas(Color c) {
