@@ -309,6 +309,22 @@ public class Index extends JFrame /*implements MouseListener*/ {
     });
   }
 
+  public void render() {
+    System.out.println("render");
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 0) {
+          board.updateCellNoPaint(x, y, Color.black);
+        } else if(cells[x][y][0] == 1) {
+          board.updateCellNoPaint(x, y, Color.green);
+        } else {
+          board.updateCellNoPaint(x, y, Color.red);
+        }
+      }
+    }
+    board.repaint();
+  }
+
   // all the logic for a generation contained here (triggered by clicking the step button)
   public void step() {
     // TODO: increase effeciency by: searching for predators, having them eat if they can, decrementing their health (your health isn't decremented this round if you reproduce), moving them if they can't do either.
@@ -377,7 +393,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x+1][y][0] = 1; // place i'm birthing is now prey
               cells[x+1][y][1] = 1; // and it has 1 health
-              board.updateCell(x+1, y, Color.green);
+              //board.updateCell(x+1, y, Color.green);
 
               cells[x][y][1] = 1; // my health resets to one
             }
@@ -388,7 +404,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x][y+1][0] = 1; // place i'm birthing is now prey
               cells[x][y+1][1] = 1; // and it has 1 health
-              board.updateCell(x, y+1, Color.green);
+              //board.updateCell(x, y+1, Color.green);
 
               cells[x][y][1] = 1; // my health resets to one
             }
@@ -399,7 +415,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x-1][y][0] = 1; // place i'm birthing is now prey
               cells[x-1][y][1] = 1; // and it has 1 health
-              board.updateCell(x-1, y, Color.green);
+              //board.updateCell(x-1, y, Color.green);
 
               cells[x][y][1] = 1; // my health resets to one
             }
@@ -410,7 +426,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x][y-1][0] = 1; // place i'm birthing is now prey
               cells[x][y-1][1] = 1; // and it has 1 health
-              board.updateCell(x, y-1, Color.green);
+              //board.updateCell(x, y-1, Color.green);
 
               cells[x][y][1] = 1; // my health resets to one
             }
@@ -472,7 +488,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
                   cells[x][y][1] += cells[x+1][y][1];
                   cells[x+1][y][0] = 2;
                   cells[x+1][y][1] = predReproHealth;
-                  board.updateCell(x+1, y, Color.red);
+                  //board.updateCell(x+1, y, Color.red);
                   ate = true;
                 /*} else {
                   foodRight = false;
@@ -488,7 +504,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
                   cells[x][y][1] += cells[x][y+1][1];
                   cells[x][y+1][0] = 2;
                   cells[x][y+1][1] = predReproHealth;
-                  board.updateCell(x, y+1, Color.red);
+                  //board.updateCell(x, y+1, Color.red);
                   ate = true;
                 /*} else {
                   foodDown = false;
@@ -504,7 +520,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
                   cells[x][y][1] += cells[x-1][y][1];
                   cells[x-1][y][0] = 2;
                   cells[x-1][y][1] = predReproHealth;
-                  board.updateCell(x-1, y, Color.red);
+                  //board.updateCell(x-1, y, Color.red);
                   ate = true;
                 /*} else {
                   foodLeft = false;
@@ -520,7 +536,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
                   cells[x][y][1] += cells[x][y-1][1];
                   cells[x][y-1][0] = 2;
                   cells[x][y-1][1] = predReproHealth;
-                  board.updateCell(x, y-1, Color.red);
+                  //board.updateCell(x, y-1, Color.red);
                   ate = true;
                 /*} else {
                   foodUp = false;
@@ -554,7 +570,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
             // this predator is dead
             cells[x][y][0] = 0;
             cells[x][y][1] = 0;
-            board.updateCell(x, y, Color.black);
+            //board.updateCell(x, y, Color.black);
           }
         }
         /*
@@ -634,11 +650,11 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x+1][y][0] = 1; // place i'm moving is now prey
               cells[x+1][y][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x+1, y, Color.green);
+              //board.updateCell(x+1, y, Color.green);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               //moved = true;
             } else if((dir == 1) && downFree) {
               // I want to move!
@@ -646,11 +662,11 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x][y+1][0] = 1; // place i'm moving is now prey
               cells[x][y+1][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x, y+1, Color.green);
+              //board.updateCell(x, y+1, Color.green);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               //moved = true;
             } else if((dir == 2) && leftFree) {
               // I want to move!
@@ -658,11 +674,11 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x-1][y][0] = 1; // place i'm moving is now prey
               cells[x-1][y][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x-1, y, Color.green);
+              //board.updateCell(x-1, y, Color.green);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               //moved = true;
             } else if((dir == 3) && upFree) {
               // I want to move!
@@ -670,11 +686,11 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x][y-1][0] = 1; // place i'm moving is now prey
               cells[x][y-1][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x, y-1, Color.green);
+              //board.updateCell(x, y-1, Color.green);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               //moved = true;
             }
           //}
@@ -730,44 +746,44 @@ public class Index extends JFrame /*implements MouseListener*/ {
               // copy cells values into new location
               cells[x+1][y][0] = 2; // place i'm moving is now predator
               cells[x+1][y][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x+1, y, Color.red);
+              //board.updateCell(x+1, y, Color.red);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               moved = true;
             } else if((dir == 1) && downFree) {
               // going down y+1
               // copy cells values into new location
               cells[x][y+1][0] = 2; // place i'm moving is now predator
               cells[x][y+1][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x, y+1, Color.red);
+              //board.updateCell(x, y+1, Color.red);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               moved = true;
             } else if((dir == 2) && leftFree) {
               // going left x-1
               // copy cells values into new location
               cells[x-1][y][0] = 2; // place i'm moving is now predator
               cells[x-1][y][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x-1, y, Color.red);
+              //board.updateCell(x-1, y, Color.red);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               moved = true;
             } else if((dir == 3) && upFree) {
               // going up y-1
               // copy cells values into new location
               cells[x][y-1][0] = 2; // place i'm moving is now predator
               cells[x][y-1][1] = cells[x][y][1]; // and it has my health
-              board.updateCell(x, y-1, Color.red);
+              //board.updateCell(x, y-1, Color.red);
 
               cells[x][y][0] = 0; // place I just left is now dead
               cells[x][y][1] = 0; // and is also dead
-              board.updateCell(x, y, Color.black);
+              //board.updateCell(x, y, Color.black);
               moved = true;
             }
           //}
@@ -776,7 +792,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
     }
 
 
-
+    render();
     genCountLbl.setText("" + ++gen);
     isBoardSetup = false;
   }

@@ -68,6 +68,45 @@ public class Board extends JPanel {
     repaint();
   }
 
+  public void updateCellNoPaint(int x, int y, Color c) {
+    int color = c.getRGB();
+    // 1x1
+    if(scale == 1) {
+      canvas.setRGB(x, y, color);
+    }
+    // 2x2
+    else if(scale == 2) {
+      canvas.setRGB((x*2), (y*2), color);
+      canvas.setRGB(((x*2)+1), (y*2), color);
+      canvas.setRGB((x*2), ((y*2)+1), color);
+      canvas.setRGB(((x*2)+1), ((y*2)+1), color);
+    }
+    // 3x3 (2x2 with a gap so you can see separation between cells)
+    else if(scale == 3) {
+      canvas.setRGB((x*3), (y*3), color);
+      canvas.setRGB(((x*3)+1), (y*3), color);
+      canvas.setRGB((x*3), ((y*3)+1), color);
+      canvas.setRGB(((x*3)+1), ((y*3)+1), color);
+    }
+    // 4x4 (3x3 with a gap so you can see separation between cells)
+    else if(scale == 4) {
+      canvas.setRGB((x*4), (y*4), color);
+      canvas.setRGB(((x*4)+1), (y*4), color);
+      canvas.setRGB(((x*4)+2), (y*4), color);
+      canvas.setRGB(((x*4)+2), (y*4)+1, color);
+      canvas.setRGB((x*4), ((y*4)+1), color);
+      canvas.setRGB((x*4), ((y*4)+2), color);
+      canvas.setRGB((x*4)+1, ((y*4)+2), color);
+      canvas.setRGB(((x*4)+1), ((y*4)+1), color);
+      canvas.setRGB(((x*4)+2), ((y*4)+2), color);
+    }
+  }
+
+  public void update() {
+     System.out.println("update");
+     repaint();
+ }
+
   public int readCell(int x, int y) {
     Color c;
     if(scale == 1)
