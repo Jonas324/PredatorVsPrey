@@ -6,11 +6,12 @@ import java.awt.Color;
 public class Index extends JFrame implements MouseListener {
   // TODO: implement way to input and save a seed for a simulation
   Random ran;
+  Boolean status = false;
 
   Container con = getContentPane();
 
-  final int DISPLAY_WIDTH = 1920;
-  final int DISPLAY_HEIGHT = 1080;
+  final int DISPLAY_WIDTH = 1600;
+  final int DISPLAY_HEIGHT = 1000;
 
   Color black = new Color(0,0,0);
 
@@ -103,6 +104,8 @@ public class Index extends JFrame implements MouseListener {
   JButton statsBtn = new JButton("Compute Statistics");
   JButton resetBtn = new JButton("Reset Simulation");
   JButton setupBtn = new JButton("Setup a board");
+  JButton runBtn = new JButton ("Run");
+  JButton stopBtn = new JButton ("Stop");
   JButton ziBtn = new JButton ("Zoom in");
   JButton zoBtn = new JButton ("Zoom out");
 
@@ -177,8 +180,9 @@ public class Index extends JFrame implements MouseListener {
     totAvgPnl.add(predAvgCountLbl);
 
 
-
     ui.add(stepBtn);
+    ui.add(runBtn);
+    ui.add(stopBtn);
     ui.add(step2Btn);
     ui.add(step100Btn);
     ui.add(statStepBtn);
@@ -192,6 +196,8 @@ public class Index extends JFrame implements MouseListener {
     pack();
 
     stepBtn.addMouseListener(this);
+    runBtn.addMouseListener(this);
+    stopBtn.addMouseListener(this);
     step2Btn.addMouseListener(this);
     step100Btn.addMouseListener(this);
     statStepBtn.addMouseListener(this);
@@ -203,7 +209,12 @@ public class Index extends JFrame implements MouseListener {
   }
 
   public static void main(String[] args) {
-    Index app = new Index();
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        new Index();
+      }
+    });
   }
 
   // all the logic for a generation contained here (triggered by clicking the step button)
@@ -625,26 +636,27 @@ public class Index extends JFrame implements MouseListener {
     isBoardSetup = false;
   }
 
-  /*
   public void run() {
     // run called
     System.out.println("Run called");
-    for(int x = 0; x < 10; ++x) {
-      step();
-      try {
-        Thread.sleep(2000);             // Sleep for 2 seconds
-      }catch(InterruptedException ex) {
-        Thread.currentThread().interrupt();
+    status = true;
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        while(status) {
+          step();
+        }
       }
-      repaint();
-    }
+    };
+    t.start();
+
   }
 
   public void stop() {
     // stop called
     System.out.println("Stop called");
+    status = false;
   }
-  */
 
   public void reset() {
     // reset called
@@ -815,7 +827,6 @@ public class Index extends JFrame implements MouseListener {
       System.out.println("StepBtn clicked");
       step();
     }
-    /*
     if(src == runBtn) {
       // run clicked
       System.out.println("RunBtn clicked");
@@ -826,7 +837,6 @@ public class Index extends JFrame implements MouseListener {
       System.out.println("StopBtn clicked");
       stop();
     }
-    */
     if(src == step2Btn) {
       // step2 clicked
       System.out.println("Step2Btn clicked");
