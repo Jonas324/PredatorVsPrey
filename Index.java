@@ -19,8 +19,11 @@ public class Index extends JFrame /*implements MouseListener*/ {
   JFrame ui;
 
   // TODO: allow for customization of starting values in here
-  int X = 500; // board width
-  int Y = 500; // board height
+  private int factor = 59;
+  private int initFactor = 50;
+
+  int X = 16*factor; // board width
+  int Y = 9*factor; // board height
 
   int zoom = 1;
 
@@ -35,19 +38,23 @@ public class Index extends JFrame /*implements MouseListener*/ {
       0 - dead (black)
       1 - prey (green)
       2 - predator (red)
+      3 - omni (blue)
 
     [X][Y][1] or col 1 - Health
       integer >= 0 (0 = dead)
 
+    [X][Y][2] or col 2 - Generations alive
+      integer >= 0
+
   */
 
-  int predStart = 1000; // number of starting predators
+  int predStart = 1*factor*initFactor; // number of starting predators
   int predStartHealth = 200;
   int predReproHealth = 22;
-  int decrementPredHP = 7;
+  int decrementPredHP = 6;
 
-  int preyStart = 10000; // number of starting prey
-  int preyStartHealth = 5;
+  int preyStart = 5*factor*initFactor; // number of starting prey
+  int preyStartHealth = 1;
   int cellsReproduceAt = 15;
 
   int gen = 0; // generation we are currently on
@@ -310,16 +317,18 @@ public class Index extends JFrame /*implements MouseListener*/ {
   }
 
   public void render() {
-    System.out.println("render");
+    //System.out.println("render");
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if(cells[x][y][0] == 0) {
           board.updateCellNoPaint(x, y, Color.black);
         } else if(cells[x][y][0] == 1) {
           board.updateCellNoPaint(x, y, Color.green);
-        } else {
+        } else if(cells[x][y][0] == 2) {
           board.updateCellNoPaint(x, y, Color.red);
-        }
+        } //else {
+          //board.updateCellNoPaint(x, y, Color.red);
+        //}
       }
     }
     board.repaint();
@@ -330,7 +339,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
     // TODO: increase effeciency by: searching for predators, having them eat if they can, decrementing their health (your health isn't decremented this round if you reproduce), moving them if they can't do either.
     // next, check which prey can reproduce. If you reprodcue, you can't move this round. increment prey's health if they subsequently move. Prey health only increases if they survive the suround (so predators don't get free health)
     // step called
-    System.out.println("Step called");
+    //System.out.println("Step called");
 
     /*
       directions:
@@ -431,166 +440,6 @@ public class Index extends JFrame /*implements MouseListener*/ {
               cells[x][y][1] = 1; // my health resets to one
             }
           }
-        }
-      }
-    }
-
-    // predator eating logic
-    for(int x = 0; x < X; ++x) {
-      for(int y = 0; y < Y; ++y) {
-        if(cells[x][y][0] == 2) {
-          // predator found!
-          // can I eat?
-          boolean foodRight = false;
-          boolean foodDown = false;
-          boolean foodLeft = false;
-          boolean foodUp = false;
-          boolean foodExists = false;
-          if(x+1 < X) {
-            if(cells[x+1][y][0] == 1) {
-              foodRight = true;
-              foodExists = true;
-            }
-          }
-          if(y+1 < Y) {
-            if(cells[x][y+1][0] == 1) {
-              foodDown = true;
-              foodExists = true;
-            }
-          }
-          if(x-1 >= 0) {
-            if(cells[x-1][y][0] == 1) {
-              foodLeft = true;
-              foodExists = true;
-            }
-          }
-          if(y-1 >= 0) {
-            if(cells[x][y-1][0] == 1) {
-              foodUp = true;
-              foodExists = true;
-            }
-          }
-
-          boolean ate = false;
-          // int count = 0;
-          while(!ate && foodExists) {
-            //System.out.println("we in here " + count);
-            //Random rand = new Random();
-            int dir = ran.nextInt(4);
-            //System.out.println("direction: " + dir + " count: " + count);
-
-            if((dir == 0) && foodRight) {
-              /*System.out.println("enter if 1 " + count);
-
-                if(cells[x+1][y][0] == 1) {*/
-                //if((cells[x+1][y][0] == 1) && (!ate)) {
-                  // time to eat
-                  cells[x][y][1] += cells[x+1][y][1];
-                  cells[x+1][y][0] = 2;
-                  cells[x+1][y][1] = predReproHealth;
-                  //board.updateCell(x+1, y, Color.red);
-                  ate = true;
-                /*} else {
-                  foodRight = false;
-                  System.out.println("foodRight false " + count);
-                }
-              }*/
-            } else if((dir == 1) && foodDown) {
-              /*System.out.println("enter if 2 " + count);
-
-                if(cells[x][y+1][0] == 1) {*/
-                //if((cells[x][y+1][0] == 1) && (!ate)) {
-                  // time to eat
-                  cells[x][y][1] += cells[x][y+1][1];
-                  cells[x][y+1][0] = 2;
-                  cells[x][y+1][1] = predReproHealth;
-                  //board.updateCell(x, y+1, Color.red);
-                  ate = true;
-                /*} else {
-                  foodDown = false;
-                  System.out.println("foodDown false " + count);
-                }
-              }*/
-            } else if((dir == 2) && foodLeft) {
-              /*System.out.println("enter if 3 " + count);
-
-                if(cells[x-1][y][0] == 1) {*/
-                //if((cells[x-1][y][0] == 1) && (!ate)) {
-                  // time to eat
-                  cells[x][y][1] += cells[x-1][y][1];
-                  cells[x-1][y][0] = 2;
-                  cells[x-1][y][1] = predReproHealth;
-                  //board.updateCell(x-1, y, Color.red);
-                  ate = true;
-                /*} else {
-                  foodLeft = false;
-                  System.out.println("foodLeft false " + count);
-                }
-              }*/
-            } else if((dir == 3) && foodUp) {
-              /*System.out.println("enter if 4 " + count);
-
-                //if((cells[x][y-1][0] == 1) && (!ate)) {
-                if(cells[x][y-1][0] == 1) {*/
-                  // time to eat
-                  cells[x][y][1] += cells[x][y-1][1];
-                  cells[x][y-1][0] = 2;
-                  cells[x][y-1][1] = predReproHealth;
-                  //board.updateCell(x, y-1, Color.red);
-                  ate = true;
-                /*} else {
-                  foodUp = false;
-                  System.out.println("foodUp false " + count);
-                }
-              }*/
-            }
-            //System.out.println("end of while " + count);
-            //++count;
-          }
-        }
-      }
-    }
-
-    // , increment/decrement hp
-    // decrement pred hp
-    for(int x = 0; x < X; ++x) {
-      for(int y = 0; y < Y; ++y) {
-        if(cells[x][y][0] == 2) {
-          cells[x][y][1] = cells[x][y][1] - decrementPredHP;
-        }
-      }
-    }
-
-    // now that the predators are done moving for the step, we decide which to kill
-    for(int x = 0; x < X; ++x) {
-      for(int y = 0; y < Y; ++y) {
-        if(cells[x][y][0] == 2) {
-          //if((cells[x][y][1] <= 1) || (cells[x][y][1] >= 1500)) {
-          if(cells[x][y][1] <= 1) {
-            // this predator is dead
-            cells[x][y][0] = 0;
-            cells[x][y][1] = 0;
-            //board.updateCell(x, y, Color.black);
-          }
-        }
-        /*
-        if(cells[x][y][0] == 1) {
-          if(cells[x][y][1] >= 400) {
-            // this prey is dead
-            cells[x][y][0] = 0;
-            cells[x][y][1] = 0;
-            board.updateCell(x, y, Color.black);
-          }
-        }
-        */
-      }
-    }
-
-    // increment prey hp
-    for(int x = 0; x < X; ++x) {
-      for(int y = 0; y < Y; ++y) {
-        if(cells[x][y][0] == 1) {
-          ++cells[x][y][1];
         }
       }
     }
@@ -791,8 +640,178 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     }
 
+    // predator eating logic
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 2) {
+          // predator found!
+          // can I eat?
+          boolean foodRight = false;
+          boolean foodDown = false;
+          boolean foodLeft = false;
+          boolean foodUp = false;
+          boolean foodExists = false;
+          if(x+1 < X) {
+            if(cells[x+1][y][0] == 1) {
+              foodRight = true;
+              foodExists = true;
+            }
+          }
+          if(y+1 < Y) {
+            if(cells[x][y+1][0] == 1) {
+              foodDown = true;
+              foodExists = true;
+            }
+          }
+          if(x-1 >= 0) {
+            if(cells[x-1][y][0] == 1) {
+              foodLeft = true;
+              foodExists = true;
+            }
+          }
+          if(y-1 >= 0) {
+            if(cells[x][y-1][0] == 1) {
+              foodUp = true;
+              foodExists = true;
+            }
+          }
 
-    render();
+          boolean ate = false;
+          // int count = 0;
+          while(!ate && foodExists) {
+            //System.out.println("we in here " + count);
+            //Random rand = new Random();
+            int dir = ran.nextInt(4);
+            //System.out.println("direction: " + dir + " count: " + count);
+
+            if((dir == 0) && foodRight) {
+              /*System.out.println("enter if 1 " + count);
+
+                if(cells[x+1][y][0] == 1) {*/
+                //if((cells[x+1][y][0] == 1) && (!ate)) {
+                  // time to eat
+                  cells[x][y][1] += cells[x+1][y][1]; // i get the prey's health
+                  cells[x+1][y][0] = 0; // prey is now nothing (temporarily)
+                  cells[x+1][y][1] = predReproHealth; // child has predetermined health
+                  //board.updateCell(x+1, y, Color.red);
+                  ate = true;
+                /*} else {
+                  foodRight = false;
+                  System.out.println("foodRight false " + count);
+                }
+              }*/
+            } else if((dir == 1) && foodDown) {
+              /*System.out.println("enter if 2 " + count);
+
+                if(cells[x][y+1][0] == 1) {*/
+                //if((cells[x][y+1][0] == 1) && (!ate)) {
+                  // time to eat
+                  cells[x][y][1] += cells[x][y+1][1];
+                  cells[x][y+1][0] = 0; // prey is now nothing (temporarily)
+                  cells[x][y+1][1] = predReproHealth;
+                  //board.updateCell(x, y+1, Color.red);
+                  ate = true;
+                /*} else {
+                  foodDown = false;
+                  System.out.println("foodDown false " + count);
+                }
+              }*/
+            } else if((dir == 2) && foodLeft) {
+              /*System.out.println("enter if 3 " + count);
+
+                if(cells[x-1][y][0] == 1) {*/
+                //if((cells[x-1][y][0] == 1) && (!ate)) {
+                  // time to eat
+                  cells[x][y][1] += cells[x-1][y][1];
+                  cells[x-1][y][0] = 0; // prey is now nothing (temporarily)
+                  cells[x-1][y][1] = predReproHealth;
+                  //board.updateCell(x-1, y, Color.red);
+                  ate = true;
+                /*} else {
+                  foodLeft = false;
+                  System.out.println("foodLeft false " + count);
+                }
+              }*/
+            } else if((dir == 3) && foodUp) {
+              /*System.out.println("enter if 4 " + count);
+
+                //if((cells[x][y-1][0] == 1) && (!ate)) {
+                if(cells[x][y-1][0] == 1) {*/
+                  // time to eat
+                  cells[x][y][1] += cells[x][y-1][1];
+                  cells[x][y-1][0] = 0; // prey is now nothing (temporarily)
+                  cells[x][y-1][1] = predReproHealth;
+                  //board.updateCell(x, y-1, Color.red);
+                  ate = true;
+                /*} else {
+                  foodUp = false;
+                  System.out.println("foodUp false " + count);
+                }
+              }*/
+            }
+            //System.out.println("end of while " + count);
+            //++count;
+          }
+        }
+      }
+    }
+    // now that the predators are done eating, lets set the type of those new predators to 2 instead of 0 (we know these exist because their health > 0)
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if((cells[x][y][0] == 0) && (cells[x][y][1] > 0)) {
+          cells[x][y][0] = 2;
+        }
+      }
+    }
+
+    // , increment/decrement hp
+    // decrement pred hp
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 2) {
+          cells[x][y][1] = cells[x][y][1] - decrementPredHP;
+        }
+      }
+    }
+
+    // now that the predators are done moving for the step, we decide which to kill
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 2) {
+          //if((cells[x][y][1] <= 1) || (cells[x][y][1] >= 1500)) {
+          if(cells[x][y][1] <= 1) {
+            // this predator is dead
+            cells[x][y][0] = 0;
+            cells[x][y][1] = 0;
+            //board.updateCell(x, y, Color.black);
+          }
+        }
+        /*
+        if(cells[x][y][0] == 1) {
+          if(cells[x][y][1] >= 400) {
+            // this prey is dead
+            cells[x][y][0] = 0;
+            cells[x][y][1] = 0;
+            board.updateCell(x, y, Color.black);
+          }
+        }
+        */
+      }
+    }
+
+    // increment prey hp
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 1) {
+          ++cells[x][y][1];
+        }
+      }
+    }
+
+
+
+
+    //render();
     genCountLbl.setText("" + ++gen);
     isBoardSetup = false;
   }
@@ -810,6 +829,15 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     };
     t.start();
+    Thread h = new Thread() {
+      @Override
+      public void run() {
+        while(status) {
+          render();
+        }
+      }
+    };
+    h.start();
 
   }
 
