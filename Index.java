@@ -3,7 +3,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
 import java.awt.Color;
-public class Index extends JFrame implements MouseListener {
+public class Index extends JFrame /*implements MouseListener*/ {
   // TODO: implement way to input and save a seed for a simulation
   Random ran;
   Boolean status = false;
@@ -16,11 +16,13 @@ public class Index extends JFrame implements MouseListener {
   Color black = new Color(0,0,0);
 
   Board board;
-  JPanel ui;
+  JFrame ui;
 
   // TODO: allow for customization of starting values in here
-  final int X = 300; // board width
-  final int Y = 300; // board height
+  int X = 500; // board width
+  int Y = 500; // board height
+
+  int zoom = 1;
 
   int[][][] cells = new int[X][Y][2];
   /*
@@ -39,13 +41,14 @@ public class Index extends JFrame implements MouseListener {
 
   */
 
-  int predStart = 500; // number of starting predators
-  int predStartHealth = 50;
-  int predReproHealth = 7;
+  int predStart = 1000; // number of starting predators
+  int predStartHealth = 200;
+  int predReproHealth = 22;
+  int decrementPredHP = 7;
 
-  int preyStart = 1000; // number of starting prey
-  int preyStartHealth = 3;
-  int cellsReproduceAt = 6;
+  int preyStart = 10000; // number of starting prey
+  int preyStartHealth = 5;
+  int cellsReproduceAt = 15;
 
   int gen = 0; // generation we are currently on
 
@@ -97,15 +100,26 @@ public class Index extends JFrame implements MouseListener {
   JLabel predAvgLbl = new JLabel("Average Predator: ");
   JLabel predAvgCountLbl = new JLabel("0");
 
+  JPanel btnPnl = new JPanel();
+
+  JPanel stepPnl = new JPanel();
   JButton stepBtn = new JButton("Go One Step");
   JButton step2Btn = new JButton("Go Two Steps");
   JButton step100Btn = new JButton("Go 100 Steps");
   JButton statStepBtn = new JButton("Stats and Step");
+
+  JPanel statsPnl = new JPanel();
   JButton statsBtn = new JButton("Compute Statistics");
+
+  JPanel runPnl = new JPanel();
   JButton resetBtn = new JButton("Reset Simulation");
   JButton setupBtn = new JButton("Setup a board");
   JButton runBtn = new JButton ("Run");
   JButton stopBtn = new JButton ("Stop");
+
+  JPanel zoomPnl = new JPanel();
+  JLabel zoomLbl = new JLabel("Zoom: ");
+  JLabel zoomCountLbl = new JLabel("1");
   JButton ziBtn = new JButton ("Zoom in");
   JButton zoBtn = new JButton ("Zoom out");
 
@@ -113,99 +127,177 @@ public class Index extends JFrame implements MouseListener {
     super("Predator vs Prey Simulation");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setVisible(true);
-    //setResizable(false);
+    setResizable(false);
     setLayout(new BorderLayout());
 
-    board = new Board((X*4), (Y*4));
+    board = new Board(X, Y);
     board.setPreferredSize(board.getPreferredSize());
-    con.add(board, BorderLayout.WEST);
+    con.add(board);
 
-    ui = new JPanel();
-    ui.setPreferredSize(new Dimension(DISPLAY_WIDTH - (X*4), DISPLAY_HEIGHT));
-    con.add(ui, BorderLayout.EAST);
+    ui = new JFrame();
+    ui.setPreferredSize(new Dimension(1280, 720));
+    ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     ui.setLayout(new FlowLayout());
+    ui.setVisible(true);
     ui.add(titleLbl);
 
     ui.add(genLbl);
     ui.add(genCountLbl);
 
     ui.add(numPnl);
-    numPnl.setPreferredSize(new Dimension(DISPLAY_WIDTH - (X*4), 50));
-    numPnl.setLayout(new FlowLayout());
-    numPnl.add(totLbl);
-    numPnl.add(totCountLbl);
-    numPnl.add(predLbl);
-    numPnl.add(predCountLbl);
-    numPnl.add(preyLbl);
-    numPnl.add(preyCountLbl);
+      numPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      numPnl.setLayout(new FlowLayout());
+      numPnl.add(totLbl);
+      numPnl.add(totCountLbl);
+      numPnl.add(predLbl);
+      numPnl.add(predCountLbl);
+      numPnl.add(preyLbl);
+      numPnl.add(preyCountLbl);
 
     ui.add(preyFatPnl);
-    preyFatPnl.setPreferredSize(new Dimension(DISPLAY_WIDTH - (X*4), 50));
-    preyFatPnl.setLayout(new FlowLayout());
-    preyFatPnl.add(preyFatLbl);
-    preyFatPnl.add(preyFatCountLbl);
-    preyFatPnl.add(preyFatXLbl);
-    preyFatPnl.add(preyFatXCountLbl);
-    preyFatPnl.add(preyFatYLbl);
-    preyFatPnl.add(preyFatYCountLbl);
+      preyFatPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      preyFatPnl.setLayout(new FlowLayout());
+      preyFatPnl.add(preyFatLbl);
+      preyFatPnl.add(preyFatCountLbl);
+      preyFatPnl.add(preyFatXLbl);
+      preyFatPnl.add(preyFatXCountLbl);
+      preyFatPnl.add(preyFatYLbl);
+      preyFatPnl.add(preyFatYCountLbl);
 
     ui.add(predFatPnl);
-    predFatPnl.setPreferredSize(new Dimension(DISPLAY_WIDTH - (X*4), 50));
-    predFatPnl.setLayout(new FlowLayout());
-    predFatPnl.add(predFatLbl);
-    predFatPnl.add(predFatCountLbl);
-    predFatPnl.add(predFatXLbl);
-    predFatPnl.add(predFatXCountLbl);
-    predFatPnl.add(predFatYLbl);
-    predFatPnl.add(predFatYCountLbl);
+      predFatPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      predFatPnl.setLayout(new FlowLayout());
+      predFatPnl.add(predFatLbl);
+      predFatPnl.add(predFatCountLbl);
+      predFatPnl.add(predFatXLbl);
+      predFatPnl.add(predFatXCountLbl);
+      predFatPnl.add(predFatYLbl);
+      predFatPnl.add(predFatYCountLbl);
 
     ui.add(totTotPnl);
-    totTotPnl.setPreferredSize(new Dimension(DISPLAY_WIDTH - (X*4), 50));
-    totTotPnl.setLayout(new FlowLayout());
-    totTotPnl.add(totTotLbl);
-    totTotPnl.add(totTotCountLbl);
-    totTotPnl.add(preyTotLbl);
-    totTotPnl.add(preyTotCountLbl);
-    totTotPnl.add(predTotLbl);
-    totTotPnl.add(predTotCountLbl);
+      totTotPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      totTotPnl.setLayout(new FlowLayout());
+      totTotPnl.add(totTotLbl);
+      totTotPnl.add(totTotCountLbl);
+      totTotPnl.add(preyTotLbl);
+      totTotPnl.add(preyTotCountLbl);
+      totTotPnl.add(predTotLbl);
+      totTotPnl.add(predTotCountLbl);
 
     ui.add(totAvgPnl);
-    totAvgPnl.setPreferredSize(new Dimension(DISPLAY_WIDTH - (X*4), 50));
-    totAvgPnl.setLayout(new FlowLayout());
-    totAvgPnl.add(totAvgLbl);
-    totAvgPnl.add(totAvgCountLbl);
-    totAvgPnl.add(preyAvgLbl);
-    totAvgPnl.add(preyAvgCountLbl);
-    totAvgPnl.add(predAvgLbl);
-    totAvgPnl.add(predAvgCountLbl);
+      totAvgPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      totAvgPnl.setLayout(new FlowLayout());
+      totAvgPnl.add(totAvgLbl);
+      totAvgPnl.add(totAvgCountLbl);
+      totAvgPnl.add(preyAvgLbl);
+      totAvgPnl.add(preyAvgCountLbl);
+      totAvgPnl.add(predAvgLbl);
+      totAvgPnl.add(predAvgCountLbl);
 
+    //ui.add(btnPnl);
+      //btnPnl.setLayout(new BoxLayout(btnPnl, BoxLayout.Y_AXIS));
 
-    ui.add(stepBtn);
-    ui.add(runBtn);
-    ui.add(stopBtn);
-    ui.add(step2Btn);
-    ui.add(step100Btn);
-    ui.add(statStepBtn);
-    ui.add(statsBtn);
-    ui.add(resetBtn);
-    ui.add(setupBtn);
-    ui.add(ziBtn);
-    ui.add(zoBtn);
+    //btnPnl.add(runPnl);
+    ui.add(runPnl);
+      runPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      runPnl.setLayout(new FlowLayout());
+      runPnl.add(runBtn);
+      runPnl.add(stopBtn);
+      runPnl.add(resetBtn);
+      runPnl.add(setupBtn);
 
-    setSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-    pack();
+    //btnPnl.add(stepPnl);
+    ui.add(stepPnl);
+      stepPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      stepPnl.setLayout(new FlowLayout());
+      stepPnl.add(stepBtn);
+      stepPnl.add(step2Btn);
+      stepPnl.add(step100Btn);
+      stepPnl.add(statStepBtn);
 
-    stepBtn.addMouseListener(this);
-    runBtn.addMouseListener(this);
-    stopBtn.addMouseListener(this);
-    step2Btn.addMouseListener(this);
-    step100Btn.addMouseListener(this);
-    statStepBtn.addMouseListener(this);
-    statsBtn.addMouseListener(this);
-    resetBtn.addMouseListener(this);
-    setupBtn.addMouseListener(this);
-    ziBtn.addMouseListener(this);
-    zoBtn.addMouseListener(this);
+    //btnPnl.add(zoomPnl);
+    ui.add(zoomPnl);
+      zoomPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      zoomPnl.setLayout(new FlowLayout());
+      zoomPnl.add(ziBtn);
+      zoomPnl.add(zoBtn);
+      zoomPnl.add(zoomLbl);
+      zoomPnl.add(zoomCountLbl);
+
+    //btnPnl.add(statsPnl);
+    ui.add(statsPnl);
+      statsPnl.setPreferredSize(new Dimension(400, DISPLAY_HEIGHT / 12));
+      statsPnl.setLayout(new FlowLayout());
+      statsPnl.add(statsBtn);
+
+    ui.pack();
+
+    setSize(X, Y);
+
+    stepBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        step();
+      }
+    });
+    runBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        run();
+      }
+    });
+    stopBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        stop();
+      }
+    });
+    step2Btn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        step2();
+      }
+    });
+    step100Btn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        step100();
+      }
+    });
+    statStepBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        statStep();
+      }
+    });
+    statsBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        stats();
+      }
+    });
+    resetBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        reset();
+      }
+    });
+    setupBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setup();
+      }
+    });
+    ziBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        zi();
+      }
+    });
+    zoBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        zo();
+      }
+    });
+
+    // disable some buttons initially
+    stepBtn.setEnabled(false);
+    runBtn.setEnabled(false);
+    step2Btn.setEnabled(false);
+    step100Btn.setEnabled(false);
+    statStepBtn.setEnabled(false);
+    statsBtn.setEnabled(false);
+    zoBtn.setEnabled(false);
   }
 
   public static void main(String[] args) {
@@ -333,69 +425,122 @@ public class Index extends JFrame implements MouseListener {
         if(cells[x][y][0] == 2) {
           // predator found!
           // can I eat?
-          //boolean ate = false;
-          //Random rand = new Random();
-          int dir = ran.nextInt(4);
-          // System.out.println("predator at x: " + x + " y: " + y + " wants to go in direction: " + dir);
-          if(dir == 0) {
-            if(x+1 < X) {
-              if(cells[x+1][y][0] == 1) {
-              //if((cells[x+1][y][0] == 1) && (!ate)) {
-                // time to eat
-                cells[x][y][1] += cells[x+1][y][1];
-                cells[x+1][y][0] = 2;
-                cells[x+1][y][1] = predReproHealth;
-                board.updateCell(x+1, y, Color.red);
-                //ate = true;
-              }
+          boolean foodRight = false;
+          boolean foodDown = false;
+          boolean foodLeft = false;
+          boolean foodUp = false;
+          boolean foodExists = false;
+          if(x+1 < X) {
+            if(cells[x+1][y][0] == 1) {
+              foodRight = true;
+              foodExists = true;
             }
-          } else if(dir == 1) {
-            if(y+1 < Y) {
-              if(cells[x][y+1][0] == 1) {
-              //if((cells[x][y+1][0] == 1) && (!ate)) {
-                // time to eat
-                cells[x][y][1] += cells[x][y+1][1];
-                cells[x][y+1][0] = 2;
-                cells[x][y+1][1] = predReproHealth;
-                board.updateCell(x, y+1, Color.red);
-                //ate = true;
-              }
+          }
+          if(y+1 < Y) {
+            if(cells[x][y+1][0] == 1) {
+              foodDown = true;
+              foodExists = true;
             }
-          } else if(dir == 2) {
-            if(x-1 >= 0) {
-              if(cells[x-1][y][0] == 1) {
-              //if((cells[x-1][y][0] == 1) && (!ate)) {
-                // time to eat
-                cells[x][y][1] += cells[x-1][y][1];
-                cells[x-1][y][0] = 2;
-                cells[x-1][y][1] = predReproHealth;
-                board.updateCell(x-1, y, Color.red);
-              //  ate = true;
-              }
+          }
+          if(x-1 >= 0) {
+            if(cells[x-1][y][0] == 1) {
+              foodLeft = true;
+              foodExists = true;
             }
-          } else if(dir == 3) {
-            if(y-1 >= 0) {
-              //if((cells[x][y-1][0] == 1) && (!ate)) {
-              if(cells[x][y-1][0] == 1) {
-                // time to eat
-                cells[x][y][1] += cells[x][y-1][1];
-                cells[x][y-1][0] = 2;
-                cells[x][y-1][1] = predReproHealth;
-                board.updateCell(x, y-1, Color.red);
-                //ate = true;
-              }
+          }
+          if(y-1 >= 0) {
+            if(cells[x][y-1][0] == 1) {
+              foodUp = true;
+              foodExists = true;
             }
+          }
+
+          boolean ate = false;
+          // int count = 0;
+          while(!ate && foodExists) {
+            //System.out.println("we in here " + count);
+            //Random rand = new Random();
+            int dir = ran.nextInt(4);
+            //System.out.println("direction: " + dir + " count: " + count);
+
+            if((dir == 0) && foodRight) {
+              /*System.out.println("enter if 1 " + count);
+
+                if(cells[x+1][y][0] == 1) {*/
+                //if((cells[x+1][y][0] == 1) && (!ate)) {
+                  // time to eat
+                  cells[x][y][1] += cells[x+1][y][1];
+                  cells[x+1][y][0] = 2;
+                  cells[x+1][y][1] = predReproHealth;
+                  board.updateCell(x+1, y, Color.red);
+                  ate = true;
+                /*} else {
+                  foodRight = false;
+                  System.out.println("foodRight false " + count);
+                }
+              }*/
+            } else if((dir == 1) && foodDown) {
+              /*System.out.println("enter if 2 " + count);
+
+                if(cells[x][y+1][0] == 1) {*/
+                //if((cells[x][y+1][0] == 1) && (!ate)) {
+                  // time to eat
+                  cells[x][y][1] += cells[x][y+1][1];
+                  cells[x][y+1][0] = 2;
+                  cells[x][y+1][1] = predReproHealth;
+                  board.updateCell(x, y+1, Color.red);
+                  ate = true;
+                /*} else {
+                  foodDown = false;
+                  System.out.println("foodDown false " + count);
+                }
+              }*/
+            } else if((dir == 2) && foodLeft) {
+              /*System.out.println("enter if 3 " + count);
+
+                if(cells[x-1][y][0] == 1) {*/
+                //if((cells[x-1][y][0] == 1) && (!ate)) {
+                  // time to eat
+                  cells[x][y][1] += cells[x-1][y][1];
+                  cells[x-1][y][0] = 2;
+                  cells[x-1][y][1] = predReproHealth;
+                  board.updateCell(x-1, y, Color.red);
+                  ate = true;
+                /*} else {
+                  foodLeft = false;
+                  System.out.println("foodLeft false " + count);
+                }
+              }*/
+            } else if((dir == 3) && foodUp) {
+              /*System.out.println("enter if 4 " + count);
+
+                //if((cells[x][y-1][0] == 1) && (!ate)) {
+                if(cells[x][y-1][0] == 1) {*/
+                  // time to eat
+                  cells[x][y][1] += cells[x][y-1][1];
+                  cells[x][y-1][0] = 2;
+                  cells[x][y-1][1] = predReproHealth;
+                  board.updateCell(x, y-1, Color.red);
+                  ate = true;
+                /*} else {
+                  foodUp = false;
+                  System.out.println("foodUp false " + count);
+                }
+              }*/
+            }
+            //System.out.println("end of while " + count);
+            //++count;
           }
         }
       }
     }
 
-    // finally, increment/decrement hp
+    // , increment/decrement hp
     // decrement pred hp
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if(cells[x][y][0] == 2) {
-          cells[x][y][1] = cells[x][y][1] - 3;
+          cells[x][y][1] = cells[x][y][1] - decrementPredHP;
         }
       }
     }
@@ -655,7 +800,11 @@ public class Index extends JFrame implements MouseListener {
   public void stop() {
     // stop called
     System.out.println("Stop called");
-    status = false;
+    if(status) {
+     status = false;
+   } else {
+     System.out.println("Not running");
+   }
   }
 
   public void reset() {
@@ -679,55 +828,61 @@ public class Index extends JFrame implements MouseListener {
   public void setup() {
     // setup called
     System.out.println("Setup called");
-    reset();
-
-    ran = new Random();
-
-    if(isBoardSetup) {
+    if(status) {
+      System.out.println("Error: simulation already running");
+    } else if(isBoardSetup) {
       System.out.println("Error: board already setup");
     } else {
+      reset();
+      ran = new Random();
+
       // first, generate starting locations for random prey
       for(int x = 0; x < preyStart; ++x) { // TODO: Optimize!
-        System.out.println("x: " + x);
+        //System.out.println("x: " + x);
         boolean placed = false;
         while(placed == false) {
           int xPos = 0;
           int yPos = 0;
           xPos = ran.nextInt(X);
           yPos = ran.nextInt(Y);
-          System.out.println("trying to place at x: " + xPos + " y: " + yPos);
-          System.out.println(board.readCell(xPos, yPos));
+          //System.out.println("trying to place at x: " + xPos + " y: " + yPos);
+          //System.out.println(board.readCell(xPos, yPos));
           if(board.readCell(xPos, yPos) == black.getRGB()) { // check if position is already occupied or not
             cells[xPos][yPos][0] = 1;
             cells[xPos][yPos][1] = preyStartHealth;
             board.updateCell(xPos, yPos, Color.green);
             placed = true;
-            System.out.println("Prey placed at x: " + xPos + " y: " + yPos);
+            //System.out.println("Prey placed at x: " + xPos + " y: " + yPos);
           }
         }
       }
       // same for pred
       for(int xx = 0; xx < predStart; ++xx) {
-        System.out.println("xx: " + xx);
+        //System.out.println("xx: " + xx);
         boolean placed = false;
         while(placed == false) {
           int xPos = 0;
           int yPos = 0;
           xPos = ran.nextInt(X);
           yPos = ran.nextInt(Y);
-          System.out.println(board.readCell(xPos, yPos));
+          //System.out.println(board.readCell(xPos, yPos));
           if(board.readCell(xPos, yPos) == black.getRGB()) { // check if position is already occupied or not
             cells[xPos][yPos][0] = 2;
             cells[xPos][yPos][1] = predStartHealth;
             board.updateCell(xPos, yPos, Color.red);
             placed = true;
-            System.out.println("Predator placed at x: " + xPos + " y: " + yPos);
+            //System.out.println("Predator placed at x: " + xPos + " y: " + yPos);
           }
         }
       }
-
       isBoardSetup = true;
     }
+    stepBtn.setEnabled(true);
+    runBtn.setEnabled(true);
+    step2Btn.setEnabled(true);
+    step100Btn.setEnabled(true);
+    statStepBtn.setEnabled(true);
+    statsBtn.setEnabled(true);
     System.out.println("End setup");
   }
 
@@ -813,13 +968,33 @@ public class Index extends JFrame implements MouseListener {
   }
 
   public void zi() {
-    board.zoom(2);
+    if(zoom < 4) {
+      ++zoom;
+      board.zoom(zoom);
+      zoBtn.setEnabled(true);
+    }
+    if(zoom == 4) {
+      zoBtn.setEnabled(true);
+      ziBtn.setEnabled(false);
+    }
+    zoomCountLbl.setText("" + zoom);
+    pack();
   }
 
   public void zo() {
-    board.zoom(1);
+    if(zoom > 1) {
+      --zoom;
+      board.zoom(zoom);
+      ziBtn.setEnabled(true);
+    }
+    if(zoom == 1) {
+      zoBtn.setEnabled(false);
+      ziBtn.setEnabled(true);
+    }
+    zoomCountLbl.setText("" + zoom);
+    pack();
   }
-
+   /*
   public void mouseClicked(MouseEvent e) {
     Object src = e.getSource();
     if(src == stepBtn) {
@@ -894,4 +1069,5 @@ public class Index extends JFrame implements MouseListener {
   public void mouseReleased(MouseEvent e) {
 
   }
+  */
 }
