@@ -19,7 +19,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
   JFrame ui;
 
   // TODO: allow for customization of starting values in here
-  private int factor = 59;
+  private int factor = 60;
   private int initFactor = 50;
 
   int X = 16*factor; // board width
@@ -27,7 +27,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
 
   int zoom = 1;
 
-  int[][][] cells = new int[X][Y][2];
+  int[][][] cells = new int[X][Y][5];
   /*
     3d array with size = 2 times the size of the board (2(X*Y)). X*Y = max number of creatures possible (every pixel on the board is occupied by a creature, no "dead" pixels).
 
@@ -43,19 +43,28 @@ public class Index extends JFrame /*implements MouseListener*/ {
     [X][Y][1] or col 1 - Health
       integer >= 0 (0 = dead)
 
-    [X][Y][2] or col 2 - Generations alive
-      integer >= 0
+    [X][Y][2] or col 2 - Status
+      0 - normal
+      1 - cannibal
+
+    [X][Y][3] or col 3 - Age
+      integer >= 0 (0 = dead)
+
+    [X][Y][4] or col 4 - Acted?
+      0 - no
+      1 - yes
 
   */
 
   int predStart = 1*factor*initFactor; // number of starting predators
   int predStartHealth = 200;
   int predReproHealth = 22;
-  int decrementPredHP = 6;
+  int predAgeDecayExp = 2;
+  double predAgeDecayRate = .1;
 
-  int preyStart = 5*factor*initFactor; // number of starting prey
+  int preyStart = 10*factor*initFactor; // number of starting prey
   int preyStartHealth = 1;
-  int cellsReproduceAt = 15;
+  int cellsReproduceAt = 30;
 
   int gen = 0; // generation we are currently on
 
@@ -67,68 +76,68 @@ public class Index extends JFrame /*implements MouseListener*/ {
   JLabel genCountLbl = new JLabel("0");
 
   JPanel numPnl = new JPanel();
-  JLabel totLbl = new JLabel("Total: ");
-  JLabel totCountLbl = new JLabel("0");
-  JLabel preyLbl = new JLabel("Prey: ");
-  JLabel preyCountLbl = new JLabel("0");
-  JLabel predLbl = new JLabel("Predators: ");
-  JLabel predCountLbl = new JLabel("0");
+    JLabel totLbl = new JLabel("Total: ");
+    JLabel totCountLbl = new JLabel("0");
+    JLabel preyLbl = new JLabel("Prey: ");
+    JLabel preyCountLbl = new JLabel("0");
+    JLabel predLbl = new JLabel("Predators: ");
+    JLabel predCountLbl = new JLabel("0");
 
   JPanel preyFatPnl = new JPanel();
-  JLabel preyFatLbl = new JLabel("Fattest Prey: ");
-  JLabel preyFatCountLbl = new JLabel("0");
-  JLabel preyFatXLbl = new JLabel("X: ");
-  JLabel preyFatXCountLbl = new JLabel("0");
-  JLabel preyFatYLbl = new JLabel("Y: ");
-  JLabel preyFatYCountLbl = new JLabel("0");
+    JLabel preyFatLbl = new JLabel("Fattest Prey: ");
+    JLabel preyFatCountLbl = new JLabel("0");
+    JLabel preyFatXLbl = new JLabel("X: ");
+    JLabel preyFatXCountLbl = new JLabel("0");
+    JLabel preyFatYLbl = new JLabel("Y: ");
+    JLabel preyFatYCountLbl = new JLabel("0");
 
 
   JPanel predFatPnl = new JPanel();
-  JLabel predFatLbl = new JLabel("Fattest Predator: ");
-  JLabel predFatCountLbl = new JLabel("0");
-  JLabel predFatXLbl = new JLabel("X: ");
-  JLabel predFatXCountLbl = new JLabel("0");
-  JLabel predFatYLbl = new JLabel("Y: ");
-  JLabel predFatYCountLbl = new JLabel("0");
+    JLabel predFatLbl = new JLabel("Fattest Predator: ");
+    JLabel predFatCountLbl = new JLabel("0");
+    JLabel predFatXLbl = new JLabel("X: ");
+    JLabel predFatXCountLbl = new JLabel("0");
+    JLabel predFatYLbl = new JLabel("Y: ");
+    JLabel predFatYCountLbl = new JLabel("0");
 
   JPanel totTotPnl = new JPanel();
-  JLabel totTotLbl = new JLabel("Total HP: ");
-  JLabel totTotCountLbl = new JLabel("0");
-  JLabel preyTotLbl = new JLabel("Total HP Prey: ");
-  JLabel preyTotCountLbl = new JLabel("0");
-  JLabel predTotLbl = new JLabel("Total HP Predator: ");
-  JLabel predTotCountLbl = new JLabel("0");
+    JLabel totTotLbl = new JLabel("Total HP: ");
+    JLabel totTotCountLbl = new JLabel("0");
+    JLabel preyTotLbl = new JLabel("Total HP Prey: ");
+    JLabel preyTotCountLbl = new JLabel("0");
+    JLabel predTotLbl = new JLabel("Total HP Predator: ");
+    JLabel predTotCountLbl = new JLabel("0");
 
   JPanel totAvgPnl = new JPanel();
-  JLabel totAvgLbl = new JLabel("Average: ");
-  JLabel totAvgCountLbl = new JLabel("0");
-  JLabel preyAvgLbl = new JLabel("Average Prey: ");
-  JLabel preyAvgCountLbl = new JLabel("0");
-  JLabel predAvgLbl = new JLabel("Average Predator: ");
-  JLabel predAvgCountLbl = new JLabel("0");
+    JLabel totAvgLbl = new JLabel("Average: ");
+    JLabel totAvgCountLbl = new JLabel("0");
+    JLabel preyAvgLbl = new JLabel("Average Prey: ");
+    JLabel preyAvgCountLbl = new JLabel("0");
+    JLabel predAvgLbl = new JLabel("Average Predator: ");
+    JLabel predAvgCountLbl = new JLabel("0");
 
   JPanel btnPnl = new JPanel();
 
-  JPanel stepPnl = new JPanel();
-  JButton stepBtn = new JButton("Go One Step");
-  JButton step2Btn = new JButton("Go Two Steps");
-  JButton step100Btn = new JButton("Go 100 Steps");
-  JButton statStepBtn = new JButton("Stats and Step");
+    JPanel stepPnl = new JPanel();
+      JButton stepBtn = new JButton("Go One Step");
+      JButton step2Btn = new JButton("Go Two Steps");
+      JButton step100Btn = new JButton("Go 100 Steps");
+      JButton statStepBtn = new JButton("Stats and Step");
 
-  JPanel statsPnl = new JPanel();
-  JButton statsBtn = new JButton("Compute Statistics");
+    JPanel statsPnl = new JPanel();
+      JButton statsBtn = new JButton("Compute Statistics");
 
-  JPanel runPnl = new JPanel();
-  JButton resetBtn = new JButton("Reset Simulation");
-  JButton setupBtn = new JButton("Setup a board");
-  JButton runBtn = new JButton ("Run");
-  JButton stopBtn = new JButton ("Stop");
+    JPanel runPnl = new JPanel();
+      JButton resetBtn = new JButton("Reset Simulation");
+      JButton setupBtn = new JButton("Setup a board");
+      JButton runBtn = new JButton ("Run");
+      JButton stopBtn = new JButton ("Stop");
 
-  JPanel zoomPnl = new JPanel();
-  JLabel zoomLbl = new JLabel("Zoom: ");
-  JLabel zoomCountLbl = new JLabel("1");
-  JButton ziBtn = new JButton ("Zoom in");
-  JButton zoBtn = new JButton ("Zoom out");
+    JPanel zoomPnl = new JPanel();
+      JLabel zoomLbl = new JLabel("Zoom: ");
+      JLabel zoomCountLbl = new JLabel("1");
+      JButton ziBtn = new JButton ("Zoom in");
+      JButton zoBtn = new JButton ("Zoom out");
 
   public Index() {
     super("Predator vs Prey Simulation");
@@ -142,7 +151,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
     con.add(board);
 
     ui = new JFrame();
-    ui.setPreferredSize(new Dimension(1280, 720));
+    ui.setPreferredSize(new Dimension(400, 800));
     ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     ui.setLayout(new FlowLayout());
     ui.setVisible(true);
@@ -324,11 +333,15 @@ public class Index extends JFrame /*implements MouseListener*/ {
           board.updateCellNoPaint(x, y, Color.black);
         } else if(cells[x][y][0] == 1) {
           board.updateCellNoPaint(x, y, Color.green);
-        } else if(cells[x][y][0] == 2) {
+        /*} else if(cells[x][y][0] == 2) {
+          if(cells[x][y][2] == 1) {
+            board.updateCellNoPaint(x, y, Color.yellow);
+          } else {
+            board.updateCellNoPaint(x, y, Color.red);
+          }*/
+        } else {
           board.updateCellNoPaint(x, y, Color.red);
-        } //else {
-          //board.updateCellNoPaint(x, y, Color.red);
-        //}
+        }
       }
     }
     board.repaint();
@@ -349,10 +362,17 @@ public class Index extends JFrame /*implements MouseListener*/ {
         3 - y-1 (up)
       NOTE: PLUS Y (1+y) IS DOWN ON THE SCREEN
     */
+    // pass go, collect $200
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        cells[x][y][4] = 0;
+        if(cells[x][y][0] == 2) {
+          ++cells[x][y][2]; // this is a predator so increment its health by 1
+        }
+      }
+    }
 
-
-
-    // this loop handles reproduction logic
+    // reproduction logic
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if(cells[x][y][0] == 1) {
@@ -363,28 +383,28 @@ public class Index extends JFrame /*implements MouseListener*/ {
           boolean leftFree = false;
           boolean upFree = false;
           if(x+1 < X) {
-            if(cells[x+1][y][0] == 0) { // TODO: OPTIMIZE
+            if(cells[x+1][y][1] == 0) { // TODO: OPTIMIZE
               // right is occupied or a wall TODO: abstract "wall" part out to all iterations in the loop (move the boolean eval up a layer so it isn't executed every time)
               rightFree = true;
             }
           }
 
           if(y+1 < Y) {
-            if(cells[x][y+1][0] == 0) {
+            if(cells[x][y+1][1] == 0) {
               // below is occupied or a wall
               downFree = true;
             }
           }
 
           if(x-1 >= 0) {
-            if(cells[x-1][y][0] == 0) {
+            if(cells[x-1][y][1] == 0) {
               // left is occupied or a wall
               leftFree = true;
             }
           }
 
           if(y-1 >= 0) {
-            if(cells[x][y-1][0] == 0) {
+            if(cells[x][y-1][1] == 0) {
               // above is occupied or a wall
               upFree = true;
             }
@@ -444,318 +464,239 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     }
 
-    // MOVE LAST
-    for(int x = 0; x < X; ++x) {
-      for(int y = 0; y < Y; ++y) {
-        if(cells[x][y][0] == 1) {
-          // prey found!
-          // am I surrounded?
-          boolean rightFree = false;
-          boolean downFree = false;
-          boolean leftFree = false;
-          boolean upFree = false;
-          boolean trapped = true;
-          if(x+1 < X) {
-            if(cells[x+1][y][0] == 0) { // TODO: OPTIMIZE
-              // right is occupied or a wall TODO: abstract "wall" part out to all iterations in the loop (move the boolean eval up a layer so it isn't executed every time)
-              rightFree = true;
-              trapped = false;
-            }
-          }
-
-          if(y+1 < Y) {
-            if(cells[x][y+1][0] == 0) {
-              // below is occupied or a wall
-              downFree = true;
-              trapped = false;
-            }
-          }
-
-          if(x-1 >= 0) {
-            if(cells[x-1][y][0] == 0) {
-              // left is occupied or a wall
-              leftFree = true;
-              trapped = false;
-            }
-          }
-
-          if(y-1 >= 0) {
-            if(cells[x][y-1][0] == 0) {
-              // above is occupied or a wall
-              upFree = true;
-              trapped = false;
-            }
-          }
-
-
-          // what direction do I prefer to move in?
-          //boolean moved = false;
-          //while(!moved && (trapped == false)) {
-            //Random rand = new Random();
-            int dir = ran.nextInt(4);
-            // System.out.println("prey at x: " + x + " y: " + y + " prefers to move in direction: " + dir);
-            if((dir == 0) && rightFree) {
-              // going right x+1
-              // copy cells values into new location
-              cells[x+1][y][0] = 1; // place i'm moving is now prey
-              cells[x+1][y][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x+1, y, Color.green);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              //moved = true;
-            } else if((dir == 1) && downFree) {
-              // I want to move!
-              // going down y+1
-              // copy cells values into new location
-              cells[x][y+1][0] = 1; // place i'm moving is now prey
-              cells[x][y+1][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x, y+1, Color.green);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              //moved = true;
-            } else if((dir == 2) && leftFree) {
-              // I want to move!
-              // going left x-1
-              // copy cells values into new location
-              cells[x-1][y][0] = 1; // place i'm moving is now prey
-              cells[x-1][y][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x-1, y, Color.green);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              //moved = true;
-            } else if((dir == 3) && upFree) {
-              // I want to move!
-              // going up y-1
-              // copy cells values into new location
-              cells[x][y-1][0] = 1; // place i'm moving is now prey
-              cells[x][y-1][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x, y-1, Color.green);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              //moved = true;
-            }
-          //}
-        }
-        if(cells[x][y][0] == 2) {
-          // predator found!
-
-          // am I surrounded?
-          boolean rightFree = false;
-          boolean downFree = false;
-          boolean leftFree = false;
-          boolean upFree = false;
-          boolean trapped = true;
-          if(x+1 < X) {
-            if(cells[x+1][y][0] == 0) { // TODO: OPTIMIZE
-              // right is occupied or a wall TODO: abstract "wall" part out to all iterations in the loop (move the boolean eval up a layer so it isn't executed every time)
-              rightFree = true;
-              trapped = false;
-            }
-          }
-
-          if(y+1 < Y) {
-            if(cells[x][y+1][0] == 0) {
-              // below is occupied or a wall
-              downFree = true;
-              trapped = false;
-            }
-          }
-
-          if(x-1 >= 0) {
-            if(cells[x-1][y][0] == 0) {
-              // left is occupied or a wall
-              leftFree = true;
-              trapped = false;
-            }
-          }
-
-          if(y-1 >= 0) {
-            if(cells[x][y-1][0] == 0) {
-              // above is occupied or a wall
-              upFree = true;
-              trapped = false;
-            }
-          }
-          // what direction do I want to go?
-          boolean moved = false;
-          //while(!moved && (trapped == false)) {
-            //Random rand = new Random();
-            int dir = ran.nextInt(4);
-            // System.out.println("predator at x: " + x + " y: " + y + " wants to go in direction: " + dir);
-            if((dir == 0) && rightFree) {
-              // going right x+1
-              // copy cells values into new location
-              cells[x+1][y][0] = 2; // place i'm moving is now predator
-              cells[x+1][y][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x+1, y, Color.red);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              moved = true;
-            } else if((dir == 1) && downFree) {
-              // going down y+1
-              // copy cells values into new location
-              cells[x][y+1][0] = 2; // place i'm moving is now predator
-              cells[x][y+1][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x, y+1, Color.red);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              moved = true;
-            } else if((dir == 2) && leftFree) {
-              // going left x-1
-              // copy cells values into new location
-              cells[x-1][y][0] = 2; // place i'm moving is now predator
-              cells[x-1][y][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x-1, y, Color.red);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              moved = true;
-            } else if((dir == 3) && upFree) {
-              // going up y-1
-              // copy cells values into new location
-              cells[x][y-1][0] = 2; // place i'm moving is now predator
-              cells[x][y-1][1] = cells[x][y][1]; // and it has my health
-              //board.updateCell(x, y-1, Color.red);
-
-              cells[x][y][0] = 0; // place I just left is now dead
-              cells[x][y][1] = 0; // and is also dead
-              //board.updateCell(x, y, Color.black);
-              moved = true;
-            }
-          //}
-        }
-      }
-    }
-
     // predator eating logic
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if(cells[x][y][0] == 2) {
-          // predator found!
-          // can I eat?
-          boolean foodRight = false;
-          boolean foodDown = false;
-          boolean foodLeft = false;
-          boolean foodUp = false;
-          boolean foodExists = false;
-          if(x+1 < X) {
-            if(cells[x+1][y][0] == 1) {
-              foodRight = true;
-              foodExists = true;
-            }
-          }
-          if(y+1 < Y) {
-            if(cells[x][y+1][0] == 1) {
-              foodDown = true;
-              foodExists = true;
-            }
-          }
-          if(x-1 >= 0) {
-            if(cells[x-1][y][0] == 1) {
-              foodLeft = true;
-              foodExists = true;
-            }
-          }
-          if(y-1 >= 0) {
-            if(cells[x][y-1][0] == 1) {
-              foodUp = true;
-              foodExists = true;
-            }
-          }
-
-          boolean ate = false;
-          // int count = 0;
-          while(!ate && foodExists) {
-            //System.out.println("we in here " + count);
-            //Random rand = new Random();
-            int dir = ran.nextInt(4);
-            //System.out.println("direction: " + dir + " count: " + count);
-
-            if((dir == 0) && foodRight) {
-              /*System.out.println("enter if 1 " + count);
-
-                if(cells[x+1][y][0] == 1) {*/
-                //if((cells[x+1][y][0] == 1) && (!ate)) {
-                  // time to eat
-                  cells[x][y][1] += cells[x+1][y][1]; // i get the prey's health
-                  cells[x+1][y][0] = 0; // prey is now nothing (temporarily)
-                  cells[x+1][y][1] = predReproHealth; // child has predetermined health
-                  //board.updateCell(x+1, y, Color.red);
-                  ate = true;
-                /*} else {
-                  foodRight = false;
-                  System.out.println("foodRight false " + count);
+          if(cells[x][y][4] == 0) {
+            // predator found!
+            // can I eat?
+            boolean foodRight = false;
+            boolean foodDown = false;
+            boolean foodLeft = false;
+            boolean foodUp = false;
+            boolean predRight = false;
+            boolean predDown = false;
+            boolean predLeft = false;
+            boolean predUp = false;
+            boolean foodExists = false;
+            if(x+1 < X) {
+              if(cells[x+1][y][0] != 0) {
+                if(cells[x+1][y][0] == 1) {
+                  // adjacent cell is prey
+                  foodRight = true;
+                  foodExists = true;
+                } else if(cells[x][y][1] > cells[x+1][y][1]) {
+                  // adjacent cell is predator and we can eat it!
+                  foodRight = true;
+                  predRight = true;
+                  foodExists = true;
                 }
-              }*/
-            } else if((dir == 1) && foodDown) {
-              /*System.out.println("enter if 2 " + count);
-
-                if(cells[x][y+1][0] == 1) {*/
-                //if((cells[x][y+1][0] == 1) && (!ate)) {
-                  // time to eat
-                  cells[x][y][1] += cells[x][y+1][1];
-                  cells[x][y+1][0] = 0; // prey is now nothing (temporarily)
-                  cells[x][y+1][1] = predReproHealth;
-                  //board.updateCell(x, y+1, Color.red);
-                  ate = true;
-                /*} else {
-                  foodDown = false;
-                  System.out.println("foodDown false " + count);
-                }
-              }*/
-            } else if((dir == 2) && foodLeft) {
-              /*System.out.println("enter if 3 " + count);
-
-                if(cells[x-1][y][0] == 1) {*/
-                //if((cells[x-1][y][0] == 1) && (!ate)) {
-                  // time to eat
-                  cells[x][y][1] += cells[x-1][y][1];
-                  cells[x-1][y][0] = 0; // prey is now nothing (temporarily)
-                  cells[x-1][y][1] = predReproHealth;
-                  //board.updateCell(x-1, y, Color.red);
-                  ate = true;
-                /*} else {
-                  foodLeft = false;
-                  System.out.println("foodLeft false " + count);
-                }
-              }*/
-            } else if((dir == 3) && foodUp) {
-              /*System.out.println("enter if 4 " + count);
-
-                //if((cells[x][y-1][0] == 1) && (!ate)) {
-                if(cells[x][y-1][0] == 1) {*/
-                  // time to eat
-                  cells[x][y][1] += cells[x][y-1][1];
-                  cells[x][y-1][0] = 0; // prey is now nothing (temporarily)
-                  cells[x][y-1][1] = predReproHealth;
-                  //board.updateCell(x, y-1, Color.red);
-                  ate = true;
-                /*} else {
-                  foodUp = false;
-                  System.out.println("foodUp false " + count);
-                }
-              }*/
+              }
             }
-            //System.out.println("end of while " + count);
-            //++count;
+            if(y+1 < Y) {
+              if(cells[x][y+1][0] != 0) {
+                if(cells[x][y+1][0] == 1) {
+                  // adjacent cell is prey
+                  foodDown = true;
+                  foodExists = true;
+                } else if(cells[x][y][1] > cells[x][y+1][1]) {
+                  // adjacent cell is predator and we can eat it!
+                  foodDown = true;
+                  predDown = true;
+                  foodExists = true;
+                }
+              }
+            }
+            if(x-1 >= 0) {
+              if(cells[x-1][y][0] != 0) {
+                if(cells[x-1][y][0] == 1) {
+                  // adjacent cell is prey
+                  foodLeft = true;
+                  foodExists = true;
+                } else if(cells[x][y][1] > cells[x-1][y][1]) {
+                  // adjacent cell is predator and we can eat it!
+                  foodLeft = true;
+                  predLeft = true;
+                  foodExists = true;
+                }
+              }
+            }
+            if(y-1 >= 0) {
+              if(cells[x][y-1][0] != 0) {
+                if(cells[x][y-1][0] == 1) {
+                  // adjacent cell is prey
+                  foodUp = true;
+                  foodExists = true;
+                } else if(cells[x][y][1] > cells[x][y-1][1]) {
+                  // adjacent cell is predator and we can eat it!
+                  foodUp = true;
+                  predUp = true;
+                  foodExists = true;
+                }
+              }
+            }
+
+            boolean ate = false;
+            // int count = 0;
+            while(!ate && foodExists) {
+              //System.out.println("we in here " + count);
+              //Random rand = new Random();
+              int dir = ran.nextInt(4);
+              //System.out.println("direction: " + dir + " count: " + count);
+
+              if((dir == 0) && foodRight) {
+                /*System.out.println("enter if 1 " + count);
+
+                  if(cells[x+1][y][0] == 1) {*/
+                  //if((cells[x+1][y][0] == 1) && (!ate)) {
+                    // time to eat
+                    if(!predRight) {
+                      cells[x][y][1] += cells[x+1][y][1] - predReproHealth; // i get the prey's health minus my child's health
+                      cells[x+1][y][0] = 0; // prey is now nothing (temporarily)
+                      cells[x+1][y][1] = predReproHealth; // child has predetermined health
+                      cells[x+1][y][2] = 0;
+                      cells[x+1][y][3] = 1;
+                      //board.updateCell(x+1, y, Color.red);
+                      ate = true;
+                      cells[x][y][2] = 0; // set my color to red because i ate prey
+                      cells[x][y][4] = 1;
+                    } else {
+                      // i gain the health of the adjacent cell im eating and the cell im eating is deleted (no reproduction)
+                      cells[x][y][1] += cells[x+1][y][1];
+                      cells[x+1][y][0] = 0;
+                      cells[x+1][y][1] = 0;
+                      cells[x+1][y][2] = 0;
+                      cells[x+1][y][3] = 0;
+                      //board.updateCell(x, y-1, Color.black);
+                      ate = true;
+                      cells[x][y][2] = 1; // set my color to yellow because i ate pred
+                      cells[x][y][4] = 1;
+                    }
+                  /*} else {
+                    foodRight = false;
+                    System.out.println("foodRight false " + count);
+                  }
+                }*/
+              } else if((dir == 1) && foodDown) {
+                /*System.out.println("enter if 2 " + count);
+
+                  if(cells[x][y+1][0] == 1) {*/
+                  //if((cells[x][y+1][0] == 1) && (!ate)) {
+                    // time to eat
+                    if(!predDown) {
+                      cells[x][y][1] += cells[x][y+1][1] - predReproHealth;
+                      cells[x][y+1][0] = 0; // prey is now nothing (temporarily)
+                      cells[x][y+1][1] = predReproHealth;
+                      cells[x][y+1][2] = 0;
+                      cells[x][y+1][3] = 1;
+                      //board.updateCell(x, y+1, Color.red);
+                      ate = true;
+                      cells[x][y][2] = 0;
+                      cells[x][y][4] = 1;
+                    } else {
+                      // i gain the health of the adjacent cell im eating and the cell im eating is deleted (no reproduction)
+                      cells[x][y][1] += cells[x][y+1][1];
+                      cells[x][y+1][0] = 0;
+                      cells[x][y+1][1] = 0;
+                      cells[x][y+1][2] = 0;
+                      cells[x][y+1][3] = 0;
+                      //board.updateCell(x, y-1, Color.black);
+                      ate = true;
+                      cells[x][y][2] = 1;
+                      cells[x][y][4] = 1;
+                    }
+                    /*} else {
+                    foodDown = false;
+                    System.out.println("foodDown false " + count);
+                  }
+                }*/
+              } else if((dir == 2) && foodLeft) {
+                /*System.out.println("enter if 3 " + count);
+
+                  if(cells[x-1][y][0] == 1) {*/
+                  //if((cells[x-1][y][0] == 1) && (!ate)) {
+                    // time to eat
+                    if(predLeft) {
+                      cells[x][y][1] += cells[x-1][y][1] - predReproHealth;
+                      cells[x-1][y][0] = 0; // prey is now nothing (temporarily)
+                      cells[x-1][y][1] = predReproHealth;
+                      cells[x-1][y][2] = 0;
+                      cells[x-1][y][3] = 1;
+                      //board.updateCell(x-1, y, Color.red);
+                      ate = true;
+                      cells[x][y][2] = 0;
+                      cells[x][y][4] = 1;
+                    } else {
+                      // i gain the health of the adjacent cell im eating and the cell im eating is deleted (no reproduction)
+                      cells[x][y][1] += cells[x-1][y][1];
+                      cells[x-1][y][0] = 0;
+                      cells[x-1][y][1] = 0;
+                      cells[x-1][y][2] = 0;
+                      cells[x-1][y][3] = 0;
+                      //board.updateCell(x, y-1, Color.black);
+                      ate = true;
+                      cells[x][y][2] = 1;
+                      cells[x][y][4] = 1;
+                    }
+                    /*} else {
+                    foodLeft = false;
+                    System.out.println("foodLeft false " + count);
+                  }
+                }*/
+              } else if((dir == 3) && foodUp) {
+                /*System.out.println("enter if 4 " + count);
+
+                  //if((cells[x][y-1][0] == 1) && (!ate)) {
+                  if(cells[x][y-1][0] == 1) {*/
+                    // time to eat
+                    if(predUp) {
+                      cells[x][y][1] += cells[x][y-1][1];
+                      cells[x][y-1][0] = 0; // prey is now nothing (temporarily)
+                      cells[x][y-1][1] = predReproHealth;
+                      cells[x][y-1][2] = 0;
+                      cells[x][y-1][3] = 1;
+                      //board.updateCell(x, y-1, Color.red);
+                      ate = true;
+                      cells[x][y][2] = 0;
+                      cells[x][y][4] = 1;
+                    } else {
+                      // i gain the health of the adjacent cell im eating and the cell im eating is deleted (no reproduction)
+                      cells[x][y][1] += cells[x][y-1][1];
+                      cells[x][y-1][0] = 0;
+                      cells[x][y-1][1] = 0;
+                      cells[x][y-1][2] = 0;
+                      cells[x][y-1][3] = 0;
+                      //board.updateCell(x, y-1, Color.black);
+                      ate = true;
+                      cells[x][y][2] = 1;
+                      cells[x][y][4] = 1;
+                    }
+                  /*} else {
+                    foodUp = false;
+                    System.out.println("foodUp false " + count);
+                  }
+                }*/
+              }
+              //System.out.println("end of while " + count);
+              //++count;
+            }
           }
         }
       }
     }
-    // now that the predators are done eating, lets set the type of those new predators to 2 instead of 0 (we know these exist because their health > 0)
+
+    // decrement pred hp
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][0] == 2) {
+          cells[x][y][1] = cells[x][y][1] - (int) Math.round(predAgeDecayRate * (cells[x][y][3] ^ predAgeDecayExp));
+        }
+      }
+    }
+
+    // now that the predators are done eating...
+    // set the type of those new predators to 2 instead of 0 (we know these exist because their health > 0)
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if((cells[x][y][0] == 0) && (cells[x][y][1] > 0)) {
@@ -764,17 +705,8 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     }
 
-    // , increment/decrement hp
-    // decrement pred hp
-    for(int x = 0; x < X; ++x) {
-      for(int y = 0; y < Y; ++y) {
-        if(cells[x][y][0] == 2) {
-          cells[x][y][1] = cells[x][y][1] - decrementPredHP;
-        }
-      }
-    }
 
-    // now that the predators are done moving for the step, we decide which to kill
+    // kill predators
     for(int x = 0; x < X; ++x) {
       for(int y = 0; y < Y; ++y) {
         if(cells[x][y][0] == 2) {
@@ -783,6 +715,8 @@ public class Index extends JFrame /*implements MouseListener*/ {
             // this predator is dead
             cells[x][y][0] = 0;
             cells[x][y][1] = 0;
+            cells[x][y][2] = 0;
+            cells[x][y][3] = 0;
             //board.updateCell(x, y, Color.black);
           }
         }
@@ -808,8 +742,227 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     }
 
+    // MOVE LAST
+    for(int x = 0; x < X; ++x) {
+      for(int y = 0; y < Y; ++y) {
+        if(cells[x][y][4] == 0) {
+          if(cells[x][y][0] == 1) {
+            // prey found!
+            // am I surrounded?
+            boolean rightFree = false;
+            boolean downFree = false;
+            boolean leftFree = false;
+            boolean upFree = false;
+            boolean trapped = true;
+            if(x+1 < X) {
+              if(cells[x+1][y][1] == 0) { // TODO: OPTIMIZE
+                // right is occupied or a wall TODO: abstract "wall" part out to all iterations in the loop (move the boolean eval up a layer so it isn't executed every time)
+                rightFree = true;
+                trapped = false;
+              }
+            }
+
+            if(y+1 < Y) {
+              if(cells[x][y+1][1] == 0) {
+                // below is occupied or a wall
+                downFree = true;
+                trapped = false;
+              }
+            }
+
+            if(x-1 >= 0) {
+              if(cells[x-1][y][1] == 0) {
+                // left is occupied or a wall
+                leftFree = true;
+                trapped = false;
+              }
+            }
+
+            if(y-1 >= 0) {
+              if(cells[x][y-1][1] == 0) {
+                // above is occupied or a wall
+                upFree = true;
+                trapped = false;
+              }
+            }
 
 
+            // what direction do I prefer to move in?
+            //boolean moved = false;
+            //while(!moved && (trapped == false)) {
+              //Random rand = new Random();
+              int dir = ran.nextInt(4);
+              // System.out.println("prey at x: " + x + " y: " + y + " prefers to move in direction: " + dir);
+              if((dir == 0) && rightFree) {
+                // going right x+1
+                // copy cells values into new location
+                cells[x+1][y][0] = 1; // place i'm moving is now prey
+                cells[x+1][y][1] = cells[x][y][1]; // and it has my health
+                //board.updateCell(x+1, y, Color.green);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                //moved = true;
+              } else if((dir == 1) && downFree) {
+                // I want to move!
+                // going down y+1
+                // copy cells values into new location
+                cells[x][y+1][0] = 1; // place i'm moving is now prey
+                cells[x][y+1][1] = cells[x][y][1]; // and it has my health
+                //board.updateCell(x, y+1, Color.green);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                //moved = true;
+              } else if((dir == 2) && leftFree) {
+                // I want to move!
+                // going left x-1
+                // copy cells values into new location
+                cells[x-1][y][0] = 1; // place i'm moving is now prey
+                cells[x-1][y][1] = cells[x][y][1]; // and it has my health
+                //board.updateCell(x-1, y, Color.green);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                //moved = true;
+              } else if((dir == 3) && upFree) {
+                // I want to move!
+                // going up y-1
+                // copy cells values into new location
+                cells[x][y-1][0] = 1; // place i'm moving is now prey
+                cells[x][y-1][1] = cells[x][y][1]; // and it has my health
+                //board.updateCell(x, y-1, Color.green);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                //moved = true;
+              }
+            //}
+          }
+          if(cells[x][y][0] == 2) {
+            // predator found!
+
+            // am I surrounded?
+            boolean rightFree = false;
+            boolean downFree = false;
+            boolean leftFree = false;
+            boolean upFree = false;
+            boolean trapped = true;
+            if(x+1 < X) {
+              if(cells[x+1][y][1] == 0) { // TODO: OPTIMIZE
+                // right is occupied or a wall TODO: abstract "wall" part out to all iterations in the loop (move the boolean eval up a layer so it isn't executed every time)
+                rightFree = true;
+                trapped = false;
+              }
+            }
+
+            if(y+1 < Y) {
+              if(cells[x][y+1][1] == 0) {
+                // below is occupied or a wall
+                downFree = true;
+                trapped = false;
+              }
+            }
+
+            if(x-1 >= 0) {
+              if(cells[x-1][y][1] == 0) {
+                // left is occupied or a wall
+                leftFree = true;
+                trapped = false;
+              }
+            }
+
+            if(y-1 >= 0) {
+              if(cells[x][y-1][1] == 0) {
+                // above is occupied or a wall
+                upFree = true;
+                trapped = false;
+              }
+            }
+            // what direction do I want to go?
+            boolean moved = false;
+            //while(!moved && (trapped == false)) {
+              //Random rand = new Random();
+              int dir = ran.nextInt(4);
+              // System.out.println("predator at x: " + x + " y: " + y + " wants to go in direction: " + dir);
+              if((dir == 0) && rightFree) {
+                // going right x+1
+                // copy cells values into new location
+                cells[x+1][y][0] = 2; // place i'm moving is now predator
+                cells[x+1][y][1] = cells[x][y][1]; // and it has my health
+                cells[x+1][y][2] = cells[x][y][2];
+                cells[x+1][y][3] = cells[x][y][3];
+                //board.updateCell(x+1, y, Color.red);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                moved = true;
+              } else if((dir == 1) && downFree) {
+                // going down y+1
+                // copy cells values into new location
+                cells[x][y+1][0] = 2; // place i'm moving is now predator
+                cells[x][y+1][1] = cells[x][y][1]; // and it has my health
+                cells[x][y+1][2] = cells[x][y][2];
+                cells[x][y+1][3] = cells[x][y][3];
+                //board.updateCell(x, y+1, Color.red);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                moved = true;
+              } else if((dir == 2) && leftFree) {
+                // going left x-1
+                // copy cells values into new location
+                cells[x-1][y][0] = 2; // place i'm moving is now predator
+                cells[x-1][y][1] = cells[x][y][1]; // and it has my health
+                cells[x-1][y][2] = cells[x][y][2];
+                cells[x-1][y][3] = cells[x][y][3];
+                //board.updateCell(x-1, y, Color.red);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                moved = true;
+              } else if((dir == 3) && upFree) {
+                // going up y-1
+                // copy cells values into new location
+                cells[x][y-1][0] = 2; // place i'm moving is now predator
+                cells[x][y-1][1] = cells[x][y][1]; // and it has my health
+                cells[x][y-1][2] = cells[x][y][2];
+                cells[x][y-1][3] = cells[x][y][3];
+                //board.updateCell(x, y-1, Color.red);
+
+                cells[x][y][0] = 0; // place I just left is now dead
+                cells[x][y][1] = 0; // and is also dead
+                cells[x][y][2] = 0;
+                cells[x][y][3] = 0;
+                //board.updateCell(x, y, Color.black);
+                moved = true;
+              }
+            //}
+          }
+        }
+      }
+    }
 
     //render();
     genCountLbl.setText("" + ++gen);
@@ -829,6 +982,15 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     };
     t.start();
+    Thread s = new Thread() {
+      @Override
+      public void run() {
+        while(status) {
+          stats();
+        }
+      }
+    };
+    s.start();
     Thread h = new Thread() {
       @Override
       public void run() {
@@ -861,6 +1023,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
       for(int y = 0; y < Y; ++y) {
         cells[x][y][0] = 0;
         cells[x][y][1] = 0;
+        cells[x][y][2] = 0;
       }
     }
 
