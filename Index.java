@@ -19,11 +19,12 @@ public class Index extends JFrame /*implements MouseListener*/ {
   JFrame ui;
 
   // TODO: allow for customization of starting values in here
-  private int factor = 59;
+  private int factor = 25;
   private int initFactor = 50;
+  int[] aspectRatio = {5, 5};
 
-  int X = 16*factor; // board width
-  int Y = 9*factor; // board height
+  int X = aspectRatio[0]*factor; // board width
+  int Y = aspectRatio[1]*factor; // board height
 
   int zoom = 1;
 
@@ -142,7 +143,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
     con.add(board);
 
     ui = new JFrame();
-    ui.setPreferredSize(new Dimension(1280, 720));
+    ui.setPreferredSize(new Dimension(400, 900));
     ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     ui.setLayout(new FlowLayout());
     ui.setVisible(true);
@@ -838,6 +839,15 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     };
     h.start();
+    Thread s = new Thread() {
+      @Override
+      public void run() {
+        while(status) {
+          stats();
+        }
+      }
+    };
+    s.start();
 
   }
 
