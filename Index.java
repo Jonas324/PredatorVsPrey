@@ -19,9 +19,9 @@ public class Index extends JFrame /*implements MouseListener*/ {
   JFrame ui;
 
   // TODO: allow for customization of starting values in here
-  private int factor = 25;
+  private int factor = 100;
   private int initFactor = 50;
-  int[] aspectRatio = {5, 5};
+  int[] aspectRatio = {16, 9};
 
   int X = aspectRatio[0]*factor; // board width
   int Y = aspectRatio[1]*factor; // board height
@@ -56,7 +56,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
 
   int preyStart = 5*factor*initFactor; // number of starting prey
   int preyStartHealth = 1;
-  int cellsReproduceAt = 15;
+  int cellsReproduceAt = 10;
 
   int gen = 0; // generation we are currently on
 
@@ -1006,12 +1006,14 @@ public class Index extends JFrame /*implements MouseListener*/ {
   public void statStep() {
     step();
     stats();
+		render();
   }
 
   public void step2() {
     step();
     step();
     stats();
+		render();
   }
 
   public void step100() {
@@ -1019,6 +1021,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
       step();
     }
     stats();
+		render();
   }
 
   public void zi() {
