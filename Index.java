@@ -19,7 +19,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
   JFrame ui;
 
   // TODO: allow for customization of starting values in here
-  private int factor = 100;
+  private int factor = 50;
   private int initFactor = 50;
   int[] aspectRatio = {16, 9};
 
@@ -826,10 +826,12 @@ public class Index extends JFrame /*implements MouseListener*/ {
       public void run() {
         while(status) {
           step();
+					//render();
         }
       }
     };
     t.start();
+
     Thread h = new Thread() {
       @Override
       public void run() {
@@ -839,6 +841,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     };
     h.start();
+		
     Thread s = new Thread() {
       @Override
       public void run() {
