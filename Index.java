@@ -49,7 +49,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
 
   */
 
-	int omniStart = Math.floor(.25*factor*initFactor);
+	int omniStart = (int) Math.floor(.25 * factor * initFactor);
 	int omniStartHealth = 200;
 	int omniReproHealth = 10;
 	int decrementOmniHP = 1;
@@ -502,6 +502,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
             int dir = ran.nextInt(4);
             // System.out.println("prey at x: " + x + " y: " + y + " prefers to move in direction: " + dir);
             if((dir == 0) && rightFree) {
+							// I want to move!
               // going right x+1
               // copy cells values into new location
               cells[x+1][y][0] = 1; // place i'm moving is now prey
