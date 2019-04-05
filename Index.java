@@ -49,6 +49,12 @@ public class Index extends JFrame /*implements MouseListener*/ {
 
   */
 
+	int omniStart = Math.floor(.25*factor*initFactor);
+	int omniStartHealth = 200;
+	int omniReproHealth = 10;
+	int decrementOmniHP = 1;
+
+
   int predStart = 1*factor*initFactor; // number of starting predators
   int predStartHealth = 200;
   int predReproHealth = 22;
@@ -327,9 +333,9 @@ public class Index extends JFrame /*implements MouseListener*/ {
           board.updateCellNoPaint(x, y, Color.green);
         } else if(cells[x][y][0] == 2) {
           board.updateCellNoPaint(x, y, Color.red);
-        } //else {
-          //board.updateCellNoPaint(x, y, Color.red);
-        //}
+        } else if(cells[x][y][0] == 3) {
+					board.updateCellNoPaint(x, y, Color.blue);
+				}
       }
     }
     board.repaint();
@@ -841,7 +847,7 @@ public class Index extends JFrame /*implements MouseListener*/ {
       }
     };
     h.start();
-		
+
     Thread s = new Thread() {
       @Override
       public void run() {
