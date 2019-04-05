@@ -1,7 +1,7 @@
 # Predator vs Prey Simulation
 Built using Java, predvprey is a Conway's Game of Life-esque simulation where there are two types of cells: prey (green) and predators (red).
 
-![demo unavailable :(](https://i.imgur.com/Vxyab1t.gifv "Demo (sorry for poor quality)")
+![demo unavailable :(](https://i.imgur.com/Vxyab1t.gif "Demo (sorry for poor quality)")
 
 ## Rules
 The game is played in rounds. Predators and prey each start the game with different amounts of "hp" and a given number of each are spread randomly across the "board".
